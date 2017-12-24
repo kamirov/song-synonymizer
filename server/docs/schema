@@ -1,0 +1,8 @@
+words
+  - id
+  - name
+  - syllablesCount
+  - ultima
+    - IPA
+
+syllable_sets
