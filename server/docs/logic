@@ -1,0 +1,64 @@
+== Get ultima ==
+- Given term, break into characters
+- For each character, starting at last character:
+    - If character is a vowel:
+        - Prepend to ultima
+        - Set encounteredVowel to true
+    - If character is a consonant, check if encounteredVowel:
+        - If encounteredVowel, exit
+        - If not encounteredVowel, prepend to ultima
+
+
+== Adding terms ==
+- Given n terms
+- For each term as term:
+  - Check if term exists in DB
+    - If yes, skip term
+    - If no:
+      - Do E query
+      - Do S query
+      - Get word ultima
+      - Add term to DB
+      - For each term from S query as sWord
+        - Check if term exists in DB
+        - If yes:
+          - Add synonym relationship
+        - If no:
+          - Do E query
+          - Add term to DB
+          - Add synonym relationship
+
+
+== Synonymizing==
+- Split paragraph into lines
+- For each line:
+    - For each word:
+        - If is pronoun and !preservePronouns, skip word
+        - If is article and !preserveArticles, skip word
+        - Get synonyms (if preserveWordSyllableCount, only get syns with same syl count)
+        - If preserveLineRhyme and word is last word in line:
+            - Replace with first synonym with same ultima (if exists)
+        - Else:
+            - Replace with first synonym (if preserveWordRhyme, get first syn with same ultima). If no syn matches, do nothing
+
+Flags
+    - preserveWordSyllableCount
+        - If true, will make sure same number of syllables in each term
+        - Very restrictive
+
+    - preserveLineSyllableCount
+        - If true, will make sure same number of syllables in each line
+        - Need a separate write up for this
+        - If preserveWordSyllableCount, then this is disabled (true by default)
+
+    - preserveWordRhyme
+        - If true, will synonymize every term with one with the same ultima
+
+    - preserveLineRhyme
+        - If true, final term will only be replaced by one with the same ultima
+
+    - preservePronouns
+        - If true, won't synonymize pronouns
+
+    - preserveArticles
+        - If true, won't synonymize articles

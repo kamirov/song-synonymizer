@@ -3,6 +3,8 @@ words
   - name
   - syllablesCount
   - ultima
-    - IPA
+    - // IPA
 
-syllable_sets
+synonyms
+  - word1_id
+  - word2_id
