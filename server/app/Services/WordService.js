@@ -1,5 +1,9 @@
 'use strict'
 
+const pluralize = require('pluralize');
+const Logger = use('Logger');
+const ExternalWordService = use('App/Services/ExternalWordService');
+
 class WordService {
 
   static get IPA_VOWELS() {
@@ -7,12 +11,24 @@ class WordService {
             'o̞', 'ɛ', 'œ', 'ɜ', 'ɞ', 'ʌ', 'ɔ', 'æ', 'ɐ', 'a', 'ɶ', 'ä', 'ɑ', 'ɒ'];
   }
 
+  addNewWords(text) {
+    let words = this.splitIntoUsableWords(text);
+
+    words.forEach(name => {
+      let wordInDatabase = false; //tmp
+      if (!wordInDatabase) {
+
+
+      }
+    });
+  }
+
   /**
    * Gets ultima from an IPA representation of a word
    * (almost...this doesn't include the first 1-2 consonants of the ultima, so that might be a misnomer)
    *
-   * @param {any} ipa
-   * @returns
+   * @param {string} ipa
+   * @returns {string}
    */
   getUltima(ipa) {
 
@@ -30,6 +46,42 @@ class WordService {
     }
 
     return ultima;
+  }
+
+
+  /**
+   * Parses individual words in a block of text. Depluralizes, removes duplicates, and unusable words
+   * @param text
+   * @returns {string[]}
+   */
+  splitIntoUsableWords(text) {
+    let words;
+
+    // Remove punctuation and split by space or new line
+    words = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\d]/g, '').split(/[ \n]/);
+
+    // Depluralize
+    words = words.map((word) => {
+      return pluralize.singular(word);
+    });
+
+    // Remove duplicates
+    words = [...new Set(words)];
+
+    // Remove empty entries
+    words = words.filter(word => word)
+
+    // Remove words with non-ascii characters
+    // TODO: Should we really remove these?
+    words = words.filter(word => !word.match(/[^\x00-\x7F]/g));
+
+    // Remove words with punctuation
+    // TODO: Should we really remove these?
+    words = words.filter(word => !word.match(/['"]/g));
+
+    Logger.info('Parsed words: ' + words);
+
+    return words;
   }
 
 }
