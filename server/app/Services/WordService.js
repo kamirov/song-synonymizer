@@ -11,16 +11,51 @@ class WordService {
             'o̞', 'ɛ', 'œ', 'ɜ', 'ɞ', 'ʌ', 'ɔ', 'æ', 'ɐ', 'a', 'ɶ', 'ä', 'ɑ', 'ɒ'];
   }
 
-  addNewWords(text) {
+  static get MAX_SYNONYM_DEPTH() { return 1; }
+
+  constructor() {
+    this.externalWordService = new ExternalWordService;
+  }
+
+  async addNewWords(text) {
     let words = this.splitIntoUsableWords(text);
 
-    words.forEach(name => {
-      let wordInDatabase = false; //tmp
-      if (!wordInDatabase) {
-
-
-      }
+    words.forEach(async name => {
+      this._addNewWordWithSynonyms(name);
     });
+  }
+
+  async _addNewWordWithSynonyms(word) {
+    let wordInDatabase = false; //tmp, replace with model get
+    if (!wordInDatabase) {
+      await this._addNewWord(name);
+      this._recursivelyAddSynonyms(name);
+    }
+  }
+
+  async _addNewWord(word) {
+    let summary = await this.externalWordService.getSummary(word);
+    let ultima = this.getUltima(summary.ultima);
+
+    // TODO: Create word from model
+    // TODO: Add word to DB
+  }
+
+  async _recursivelyAddSynonyms(word, currentDepth = 1) {
+    let synonyms = await this.externalWordService.getSynonyms(word);
+
+    synonyms.forEach(async synonym => {
+      let synonymInDatabase = false; // tmp, replace with model get
+      if (!synonymInDatabase) {
+        await this._addNewWord(word);
+
+        if (currentDepth < WordService.MAX_SYNONYM_DEPTH) {
+          this._recursivelyAddSynonyms(word, currentDepth+1);
+        }
+      }
+
+      // TODO: Add synonym relationship
+    })
   }
 
   /**
