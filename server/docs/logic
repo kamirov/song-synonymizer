@@ -33,13 +33,13 @@
 - Split paragraph into lines
 - For each line:
     - For each word:
-        - If is pronoun and !preservePronouns, skip word
-        - If is article and !preserveArticles, skip word
+        - If is pronoun and preservePronouns, skip word
+        - If is article and preserveArticles, skip word
         - Get synonyms (if preserveWordSyllableCount, only get syns with same syl count)
         - If preserveLineRhyme and word is last word in line:
-            - Replace with first synonym with same ultima (if exists)
+            - Replace with random synonym with same ultima (if exists)
         - Else:
-            - Replace with first synonym (if preserveWordRhyme, get first syn with same ultima). If no syn matches, do nothing
+            - Replace with random synonym (if preserveWordRhyme, get first syn with same ultima). If no syn matches, do nothing
 
 Flags
     - preserveWordSyllableCount
