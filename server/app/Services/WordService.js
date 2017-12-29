@@ -11,6 +11,17 @@ class WordService {
             'o̞', 'ɛ', 'œ', 'ɜ', 'ɞ', 'ʌ', 'ɔ', 'æ', 'ɐ', 'a', 'ɶ', 'ä', 'ɑ', 'ɒ'];
   }
 
+  // TODO: Fill these in
+  static get PRONOUNS() {
+    return [];
+  }
+  static get ARTICLES() {
+    return [];
+  }
+  static get CONJUNCTIONS() {
+    return [];
+  }
+
   static get MAX_SYNONYM_DEPTH() { return 1; }
 
   constructor() {
@@ -23,6 +34,18 @@ class WordService {
     words.forEach(async name => {
       this._addNewWordWithSynonyms(name);
     });
+  }
+
+  isPronoun(word) {
+    return WordService.PRONOUNS.includes(word);
+  }
+
+  isConjunction(word) {
+    return WordService.CONJUNCTIONS.includes(word);
+  }
+
+  isArticle(word) {
+    return WordService.ARTICLES.includes(word);
   }
 
   async _addNewWordWithSynonyms(word) {
