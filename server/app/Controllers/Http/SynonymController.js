@@ -4,8 +4,11 @@ const SynonymService = use ('App/Services/SynonymService');
 
 class SynonymController {
   async synonymize({request}) {
+    let synonymService = new SynonymService;
     let text = request.get('text');
-    return await (new SynonymService).synonymize(text);
+
+    synonymService.setFlags(request.get('flags'));
+    return await synonymService.synonymize(text);
   }
 }
 
