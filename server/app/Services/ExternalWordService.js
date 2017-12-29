@@ -106,6 +106,10 @@ class ExternalWordService {
   }
 
 
+  /**
+   * Check whether we've made too many calls to the API today
+   * @private
+   */
   _checkApiLimit() {
     let apiCallsCount = 0;  // TODO: Fill this (probably Redis)
 
