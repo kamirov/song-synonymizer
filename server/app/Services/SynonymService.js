@@ -40,40 +40,41 @@ class SynonymService {
     this._flags = Object.assign({}, SynonymService.DEFAULT_FLAGS, flags);
   }
 
-
   synonymizeText(text) {
     let lines = this._splitTextIntoLines(text);
 
     lines.forEach(line => {
-      let token = this._splitLineIntoTokens(line);
+      let tokens = this._splitLineIntoTokens(line);
 
-      tokens.map((token, tokenIdx) => {
+      let replacementsList = tokens.forEach((token, tokenIdx) => {
         if (this._isPunctuation(token)) {
-          return token;
+          return;
         }
 
         let tokenIsPluralized = pluralize.isPluralized(token);
+        let singularToken = token;
         if (tokenIsPluralized) {
-          token = pluralize.singular(token);
+          singularToken = pluralize.singular(token);
         }
 
-        if (this._isWordExcludedByClass(token)) {
-          return token;
+        if (this._isWordExcludedByClass(singularToken)) {
+          return [token]; // TODO: Get word using model, format as {name, syllablesCount}
         }
 
         // TODO: Get syn using model (use a scope to limit by syllables if preserveWordSyllableCount)
-        // TODO: When getting syn, should scope by preserveWordSyllableCount, preserveWordRhyme, and (if last word and !preserveWordRhyme) by preserveLineRhyme
-        // TODO: This scope should also order by random
-        let synonym = null; // tmp
+        // TODO: When getting syn, should scope by preserveWordSyllableCount, preserveWordRhyme, and (if last word and !preserveWordRhyme) by preserveLineRhyme*
+        // TODO: synonyms should be array of {name, syllablesCount}
+        let synonyms = []; // tmp
 
-        let replacement = synonym || token;
-
-        // TODO: Need to add functionality for preserveLineRhyme
-        if (tokenIsPluralized) {
-          replacement = pluralize.plural(replacement);
+        if (synonyms.length) {
+          if (tokenIsPluralized) {
+            return synonyms.map(synonym => pluralize.plural(synonym));
+          } else {
+            return synonyms;
+          }
+        } else {
+          return [token]; // TODO: Get word using model, format as {name, syllablesCount}
         }
-
-        return replacement;
       });
     });
   }
