@@ -79,7 +79,7 @@ class SynonymService {
   }
 
   _isPunctuation(token) {
-
+    // TODO: Some regex check
   }
 
   _splitTextIntoLines(text) {
@@ -91,7 +91,7 @@ class SynonymService {
   }
 
   _isWordExcludedByClass(word) {
-    for (flag in SynonymService.CLASS_FLAGS_AND_CHECKS) {
+    for (let flag in SynonymService.CLASS_FLAGS_AND_CHECKS) {
       let checkFunc = SynonymService.CLASS_FLAGS_AND_CHECKS[flag];
       if (this._flags[flag] && this._wordService[checkFunc](word)) {
         return true;
