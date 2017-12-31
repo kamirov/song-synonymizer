@@ -8,3 +8,9 @@ words
 synonyms
   - word1_id
   - word2_id
+
+synonymizations
+  - id
+  - hash
+  - original
+  - synonymized
