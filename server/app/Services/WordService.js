@@ -3,23 +3,37 @@
 const pluralize = require('pluralize');
 const Logger = use('Logger');
 const ExternalWordService = use('App/Services/ExternalWordService');
+const Word = use('App/Models/Word');
 
 class WordService {
 
   static get IPA_VOWELS() {
-    return ['i', 'y', 'ɨ', 'ʉ', 'ɯ', 'u', 'ɪ', 'ʏ', 'ɪ̈', 'ʊ̈', 'ʊ', 'e', 'ø', 'ɘ', 'ɵ', 'ɤ', 'o', 'e̞', 'ø̞', 'ə', 'ɤ̞',
-            'o̞', 'ɛ', 'œ', 'ɜ', 'ɞ', 'ʌ', 'ɔ', 'æ', 'ɐ', 'a', 'ɶ', 'ä', 'ɑ', 'ɒ'];
+    return [
+      'i', 'y', 'ɨ', 'ʉ', 'ɯ', 'u', 'ɪ', 'ʏ', 'ɪ̈', 'ʊ̈', 'ʊ', 'e', 'ø', 'ɘ', 'ɵ', 'ɤ', 'o', 'e̞', 'ø̞', 'ə', 'ɤ̞',
+      'o̞', 'ɛ', 'œ', 'ɜ', 'ɞ', 'ʌ', 'ɔ', 'æ', 'ɐ', 'a', 'ɶ', 'ä', 'ɑ', 'ɒ'
+    ];
   }
-
-  // TODO: Fill these in
   static get PRONOUNS() {
-    return [];
-  }
-  static get ARTICLES() {
-    return [];
+    return [
+      'I', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them',
+      'what', 'who',
+      'it', 'whom',
+      'mine', 'yours', 'his', 'hers', 'ours', 'theirs',
+      'this', 'that', 'these', 'those',
+      'which', 'whose', 'whoever', 'whatever', 'whichever', 'whomever',
+      'myself', 'yourself', 'himself', 'herself', 'itself', 'ourselves', 'themselves'
+    ];
   }
   static get CONJUNCTIONS() {
-    return [];
+    // Only coordinating conjunctions
+    return [
+      'for', 'and', 'nor', 'but', 'or', 'yet', 'so'
+    ];
+  }
+  static get ARTICLES() {
+    return [
+      'the', 'an', 'a'
+    ];
   }
 
   static get MAX_SYNONYM_DEPTH() { return 1; }
@@ -60,8 +74,11 @@ class WordService {
     let summary = await this.externalWordService.getSummary(word);
     let ultima = this.getUltima(summary.ultima);
 
-    // TODO: Create word from model
-    // TODO: Add word to DB
+    let wordParams = Object.assign({}, summary, {
+      ultima
+    });
+
+    await Word.create(wordParams);
   }
 
   async _recursivelyAddSynonyms(word, currentDepth = 1) {
@@ -76,6 +93,8 @@ class WordService {
           this._recursivelyAddSynonyms(word, currentDepth+1);
         }
       }
+
+
 
       // TODO: Add synonym relationship
     })
