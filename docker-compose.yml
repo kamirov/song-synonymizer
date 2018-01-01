@@ -16,8 +16,8 @@ services:
       - server
 
   server:
-    image: node:9.3
-    command: npm start
+    image: stephenafamo/adonisjs:1.0.0
+    command: npm run start-dev
     working_dir: /app
     volumes:
       - ./server:/app
