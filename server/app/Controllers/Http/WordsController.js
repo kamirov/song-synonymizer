@@ -4,10 +4,16 @@ const WordService = use('App/Services/WordService');
 
 class WordController {
 
-  // TODO: Look into adonis resources for words
-
-  async get({request}) {
+  async index({request}) {
     // STUB
+  }
+
+  async create({request}) {
+
+  }
+
+  async show({request}) {
+    return {'a': 'b'}
   }
 
   async add({request}) {
