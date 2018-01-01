@@ -22,7 +22,9 @@
     "@adonisjs/fold": "^4.0.5",
     "@adonisjs/framework": "^4.0.28",
     "@adonisjs/ignitor": "^1.0.14",
-    "@adonisjs/lucid": "^4.0.24"
+    "@adonisjs/lucid": "^4.0.24",
+    "node-fetch": "^1.7.3",
+    "pluralize": "^7.0.0"
   },
   "devDependencies": {},
   "autoload": {
