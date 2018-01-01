@@ -1,6 +1,6 @@
 'use strict'
 
-const WordService = use('App/Services/WordService');
+const WordService = require('App/Services/WordService');
 
 class WordController {
 

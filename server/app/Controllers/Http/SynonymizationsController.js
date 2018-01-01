@@ -1,6 +1,6 @@
 'use strict'
 
-const SynonymizationService = use ('App/Services/SynonymizationService');
+const SynonymizationService = require('App/Services/SynonymizationService');
 
 class SynonymizationController {
   // TODO: Possibly use Adonis resources

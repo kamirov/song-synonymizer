@@ -1,6 +1,6 @@
 'use strict'
 
-const Model = use('Model')
+const Model = use('Model');
 
 class Synonymization extends Model {
 

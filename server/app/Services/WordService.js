@@ -1,9 +1,11 @@
 'use strict'
 
-const pluralize = require('pluralize');
 const Logger = use('Logger');
-const ExternalWordService = use('App/Services/ExternalWordService');
-const Word = use('App/Models/Word');
+
+const pluralize = require('pluralize');
+
+const ExternalWordService = require('App/Services/ExternalWordService');
+const Word = require('App/Models/Word');
 
 class WordService {
 

@@ -1,6 +1,6 @@
 'use strict'
 
-const SynonymService = use ('App/Services/SynonymService');
+const SynonymService = require('App/Services/SynonymService');
 
 class SynonymController {
   async synonymize({request}) {

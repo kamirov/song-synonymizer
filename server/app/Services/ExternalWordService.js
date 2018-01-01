@@ -81,7 +81,7 @@ class ExternalWordService {
     summary = Object.assign({}, summary, {
       name: summaryResponse.word,
       syllablesCount: (summaryResponse.syllables ? summaryResponse.syllables.count : null),
-    };
+    });
 
     if (summaryResponse.pronunciation) {
       let ipa = summaryResponse.pronunciation.all || summaryResponse.pronunciation;

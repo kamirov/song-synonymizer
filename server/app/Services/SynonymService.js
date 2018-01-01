@@ -1,8 +1,7 @@
 'use strict'
 
-import pluralize from 'pluralize';
-
-const WordService = use('App/Services/WordService');
+const pluralize = require('pluralize');
+const WordService = require('App/Services/WordService');
 
 class SynonymService {
 
