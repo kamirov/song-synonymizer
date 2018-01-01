@@ -1,0 +1,7 @@
+New tech to go over:
+  - Redux
+  - Postgres
+  - Docker
+
+Symbolic link (need to add this to server Dockerfile to use 'require' instead of 'use' commands)
+  ln -s ~/Projects/song-synonymizer/server/app ./node_modules/App
