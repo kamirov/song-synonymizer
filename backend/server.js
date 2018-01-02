@@ -2,14 +2,14 @@
 
 /*
 |--------------------------------------------------------------------------
-| Http server
+| Http backend
 |--------------------------------------------------------------------------
 |
-| This file bootstrap Adonisjs to start the HTTP server. You are free to
-| customize the process of booting the http server.
+| This file bootstrap Adonisjs to start the HTTP backend. You are free to
+| customize the process of booting the http backend.
 |
 | """ Loading ace commands """
-|     At times you may want to load ace commands when starting the HTTP server.
+|     At times you may want to load ace commands when starting the HTTP backend.
 |     Same can be done by chaining `loadCommands()` method after
 |
 | """ Preloading files """

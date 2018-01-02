@@ -9,7 +9,9 @@ if [[ -z "$(ls -A $PWD | grep .env)" ]]; then
 	exit 1
 fi
 
+# Should these be here?
 npm install
+adonis install @adonisjs/redis
 
 # Add symbolic link (needed to let "require" calls work, which are needed for Intellisense)
 ln -sf /app/app ./node_modules/App

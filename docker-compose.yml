@@ -13,13 +13,13 @@ services:
     ports:
       - "4000:4000"
     depends_on:
-      - server
+      - backend
 
-  server:
-    build: ./server
+  backend:
+    build: ./backend
     working_dir: /app
     volumes:
-      - ./server:/app
+      - ./backend:/app
     environment:
       PORT: 3000
     ports:
@@ -32,6 +32,12 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_PASSWORD: password
       POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
       POSTGRES_DB: songSynonymizer
+
+  cache:
+    image: redis
+    expose: [6379]
+
+  # TODO: Fix db image, add web, and redis images

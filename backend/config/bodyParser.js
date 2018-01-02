@@ -97,12 +97,12 @@ module.exports = {
     | Max Size
     |--------------------------------------------------------------------------
     |
-    | Below value is the max size of all the files uploaded to the server. It
+    | Below value is the max size of all the files uploaded to the backend. It
     | is validated even before files have been processed and hard exception
     | is thrown.
     |
     | Consider setting a reasonable value here, otherwise people may upload GB's
-    | of files which will keep your server busy.
+    | of files which will keep your backend busy.
     |
     | Also this value is considered when `autoProcess` is set to true.
     |
