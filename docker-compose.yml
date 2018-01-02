@@ -9,15 +9,14 @@ services:
     volumes:
       - ./client:/app
     environment:
-      PORT: 4000
+      PORT: 4000,
     ports:
       - "4000:4000"
     depends_on:
       - server
 
   server:
-    image: stephenafamo/adonisjs:1.0.0
-    command: npm run start-dev
+    build: ./server
     working_dir: /app
     volumes:
       - ./server:/app
