@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Replace Adonis HOST and PORT values (keeps us consistently defining ports in docker-compose file)
+# Replace server port (keeps us consistently defining ports in docker-compose file)
 sed -i -e "s/PORT=.*/PORT=$PORT/g" .env
 
 # Check for .env file
