@@ -1,20 +1,20 @@
 version: "3"
 
 services:
-
-  frontend:
-    image: node:9.3
-    command: npm start
-    working_dir: /app
-    volumes:
-      - ./client:/app
-    environment:
-      PORT: 4000,
-    ports:
-      - "4000:4000"
-    depends_on:
-      - backend
-
+#
+#  frontend:
+#    image: node:9.3
+#    command: npm start
+#    working_dir: /app
+#    volumes:
+#      - ./frontend:/app
+#    environment:
+#      PORT: 4000,
+#    ports:
+#      - "4000:4000"
+#    depends_on:
+#      - backend
+#
   backend:
     build: ./backend
     working_dir: /app
@@ -26,6 +26,7 @@ services:
       - "3000:3000"
     depends_on:
       - db
+      - cache
 
   db:
     image: postgres:10.1
@@ -37,7 +38,10 @@ services:
       POSTGRES_DB: songSynonymizer
 
   cache:
-    image: redis
-    expose: [6379]
+    image: redis:3.2.11
+    environment:
+      PORT: 3000
+    expose:
+      - "6379"
 
-  # TODO: Fix db image, add web, and redis images
+  # TODO: Fix db image, add web image
