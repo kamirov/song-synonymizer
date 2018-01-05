@@ -7,10 +7,10 @@ class WordSchema extends Schema {
   up () {
     this.create('words', (table) => {
       table.increments()
-      table.timestamps()
       table.string('name')
       table.integer('syllablesCount')
-      table.ultima('ultima')
+      table.string('ultima')
+      table.timestamps()
     })
   }
 
