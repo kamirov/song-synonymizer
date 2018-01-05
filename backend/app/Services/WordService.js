@@ -4,8 +4,8 @@ const Logger = use('Logger');
 
 const pluralize = require('pluralize');
 
-const ExternalWordService = require('App/Services/ExternalWordService');
-const Word = require('App/Models/Word');
+const ExternalWordService = use('App/Services/ExternalWordService');
+const Word = use('App/Models/Word');
 
 class WordService {
 

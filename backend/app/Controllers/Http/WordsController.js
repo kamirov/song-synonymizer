@@ -1,6 +1,6 @@
 'use strict'
 
-const WordService = require('App/Services/WordService');
+const WordService = use('App/Services/WordService');
 
 class WordController {
 
@@ -13,7 +13,7 @@ class WordController {
   }
 
   async show({request}) {
-    return {'a': 'b'}
+
   }
 
   async add({request}) {

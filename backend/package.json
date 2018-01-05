@@ -26,10 +26,9 @@
     "@adonisjs/lucid": "^4.0.24",
     "@adonisjs/redis": "^2.0.3",
     "node-fetch": "^1.7.3",
+    "pg": "^7.4.0",
     "pluralize": "^7.0.0"
   },
   "devDependencies": {},
-  "autoload": {
-    "App": "./app"
-  }
+  "autoload": {}
 }
