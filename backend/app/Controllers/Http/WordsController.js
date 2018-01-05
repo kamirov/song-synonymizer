@@ -1,6 +1,6 @@
 'use strict'
 
-const WordService = use('App/Services/WordService');
+const WordStorageService = use('App/Services/WordStorageService');
 const Word = use ('App/Models/Word');
 
 class WordController {
@@ -10,8 +10,8 @@ class WordController {
   }
 
   async parseAndAddNew({request}) {
-    let text = request.get('text');
-    return await (new WordService.addNewWords(text));
+    let text = request.post().text;
+    return await (new WordStorageService).addNewWords(text);
   }
 }
 

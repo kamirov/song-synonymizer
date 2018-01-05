@@ -1,7 +1,9 @@
 'use strict'
 
-const Env = use('Env');
 const fetch = require('node-fetch');
+
+const Env = use('Env');
+const WordService = use('App/Services/WordService');
 
 /**
  * Words API wrapper service
@@ -34,21 +36,23 @@ class ExternalWordService {
   }
 
   constructor() {
+    this.wordService = new WordService;
     this._checkApiLimit();
   }
 
   /**
    * Fetches summary from the Words API
-   * @param {string} word
+   * @param {string} name
    * @returns {Promise<Object>}
    */
-  async getSummary(word) {
+  async getSummary(name) {
     let response = await fetch(
-      ExternalWordService.API_ENDPOINTS.summary.replace(':word', word),
+      ExternalWordService.API_ENDPOINTS.summary.replace(':word', name),
       ExternalWordService.REQUEST_GET_CONFIG);
 
     return this._parseSummary(await response.json());
   }
+
 
 
   /**
@@ -72,10 +76,12 @@ class ExternalWordService {
    * @private
    */
   _parseSummary(summaryResponse) {
+    console.log('response', summaryResponse);
+
     let summary = {
-      name,
-      syllablesCount,
-      ultima
+      name: null,
+      syllablesCount: null,
+      ultima: null
     };
 
     summary = Object.assign({}, summary, {
@@ -85,7 +91,7 @@ class ExternalWordService {
 
     if (summaryResponse.pronunciation) {
       let ipa = summaryResponse.pronunciation.all || summaryResponse.pronunciation;
-      summary.ultima = getUltima(ipa);
+      summary.ultima = this.wordService.getUltima(ipa);
     }
 
     return summary;
