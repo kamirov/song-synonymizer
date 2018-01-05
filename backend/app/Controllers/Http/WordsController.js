@@ -1,23 +1,12 @@
 'use strict'
 
 const WordService = use('App/Services/WordService');
+const Word = use ('App/Models/Word');
 
 class WordController {
 
-  async index({request}) {
-    // STUB
-  }
-
-  async create({request}) {
-
-  }
-
-  async show({request}) {
-
-  }
-
-  async add({request}) {
-    // STUB
+  async show({params}) {
+    return await Word.findByOrFail('name', params.name);
   }
 
   async parseAndAddNew({request}) {
