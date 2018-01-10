@@ -12,51 +12,21 @@ class WordStorageService {
 
   static get MAX_SYNONYM_DEPTH() { return 1; }
 
+
   constructor() {
     this.wordService = new WordService;
     this.externalWordService = new ExternalWordService;
+    this.newWords = [];
   }
+
 
   async addNewWords(text) {
     let words = this.splitIntoUsableWords(text);
-
-    words.forEach(async name => {
-      this._addNewWordWithSynonyms(name);
+    await words.forEach(async name => {
+      await this._addNewWordWithSynonyms(name);
     });
   }
 
-  async _addNewWordWithSynonyms(name) {
-
-    let word = await Word.findBy('name', name);
-    console.log(word);
-
-    if (!word) {
-      await this._addNewWord(name);
-      await this._recursivelyAddSynonyms(name);
-    }
-  }
-
-  async _addNewWord(name) {
-    let summary = await this.externalWordService.getSummary(name);
-    await Word.create(summary);
-  }
-
-  async _recursivelyAddSynonyms(name, currentDepth = 1) {
-    let synonymNames = await this.externalWordService.getSynonyms(name);
-    synonymNames.forEach(async synonymName => {
-
-      let synonym = await Word.findBy('name', synonymName);
-      if (!synonym) {
-        await this._addNewWord(synonymName);
-
-        // if (currentDepth < WordStorageService.MAX_SYNONYM_DEPTH) {
-        //   this._recursivelyAddSynonyms(word, currentDepth+1);
-        // }
-      }
-
-      // TODO: Add synonym relationship
-    })
-  }
 
   /**
    * Parses individual words in a block of text. Depluralizes, removes duplicates, and unusable words
@@ -91,6 +61,57 @@ class WordStorageService {
     Logger.info('Parsed words: ' + words);
 
     return words;
+  }
+
+
+  // Private methods
+
+  async _addNewWordWithSynonyms(name) {
+
+    let word = await Word.findBy('name', name);
+
+    if (!word) {
+      word = await this._addNewWord(name);
+    }
+
+    if (!word.hasCheckedSynonyms) {
+      await this._recursivelyAddSynonyms(word);
+    }
+  }
+
+  async _addNewWord(name) {
+    let wordParams = await this.externalWordService.getSummary(name);
+    if (!wordParams) {
+      wordParams = WordService.EMPTY_WORD_PARAMS;
+      wordParams.name = name;
+    }
+
+    this.newWords.push(name);
+
+    return await Word.create(wordParams);
+  }
+
+  async _recursivelyAddSynonyms(word, currentDepth = 1) {
+    let synonymNames = await this.externalWordService.getSynonyms(word.name);
+    Logger.info(synonymNames);
+
+    synonymNames.forEach(async synonymName => {
+      let synonym = await Word.findBy('name', synonymName);
+      if (!synonym) {
+        synonym = await this._addNewWord(synonymName);
+
+        // if (currentDepth < WordStorageService.MAX_SYNONYM_DEPTH) {
+        //   this._recursivelyAddSynonyms(word, currentDepth+1);
+        // }
+      }
+
+      // TODO: Really don't like that this is done for each synonym. Should do this as a bulk operation
+      await word.synonyms().attach(synonym.id);
+    });
+
+    word.hasCheckedSynonyms = true;
+    await word.save();
+
   }
 
 }

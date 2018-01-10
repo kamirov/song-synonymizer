@@ -7,6 +7,13 @@ const Word = use('App/Models/Word');
 
 class WordService {
 
+  static get EMPTY_WORD_PARAMS() {
+    return {
+      hasCheckedSynonyms: true,
+      isEmpty: true
+    }
+  }
+
   static get IPA_VOWELS() {
     return [
       'i', 'y', 'ɨ', 'ʉ', 'ɯ', 'u', 'ɪ', 'ʏ', 'ɪ̈', 'ʊ̈', 'ʊ', 'e', 'ø', 'ɘ', 'ɵ', 'ɤ', 'o', 'e̞', 'ø̞', 'ə', 'ɤ̞',
