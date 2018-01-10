@@ -59,6 +59,15 @@ class WordService {
   }
 
 
+  async getWord(name) {
+    return await Word
+      .query()
+      .where('name', name)
+      .with('synonyms')
+      .fetch();
+  }
+
+
   /**
    * Gets ultima from an IPA representation of a word
    * (almost...this doesn't include the first 1-2 consonants of the ultima, so that might be a misnomer)
