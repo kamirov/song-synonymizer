@@ -9,6 +9,8 @@ class SynonymizationSchema extends Schema {
       table.string('hash');
       table.string('original');
       table.string('synonymized');
+      table.timestamp('createdAt');
+      table.timestamp('updatedAt');
     })
   }
 
