@@ -1,0 +1,31 @@
+======= State tree
+
+{
+    flags: {
+        preserveWordSyllableCount: <bool>,
+        preserveLineSyllableCount: <bool>,
+        preserveWordRhyme: <bool>,
+        preserveLineRhyme: <bool>,
+        preservePronouns: <bool>,
+        preserveArticles: <bool>
+    },
+    synonymization: {
+        original: <string>,
+        synonymized: <string>
+    },
+    hash: <string>
+}
+
+
+======== Actions
+
+- SET_FLAGS
+- SET_HASH
+- SET_ORIGINAL_TEXT
+- SET_SYNONYMIZED_TEXT
+
+
+======== Reducers
+
+- flags
+- synonymization

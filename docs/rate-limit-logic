@@ -1,0 +1,11 @@
+- on API call:
+    - check dailyRemaining
+        - if dailyRemaining not set:
+            - set dailyRemaining = N, expires at midnight
+            - allow API call
+        - else
+            - if dailyRemaining > 0:
+                - allow API call
+                - set dailyRemaining = dailyRemaining -1, expires at midnight
+            - else
+                - throw "exceeded API limit" error
