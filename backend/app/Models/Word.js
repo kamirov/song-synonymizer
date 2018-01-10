@@ -5,7 +5,7 @@ const AbstractModel = use('App/Models/AbstractModel')
 class Word extends AbstractModel {
 
   synonyms() {
-    return this.belongsToMany('App/Models/Word')
+    return this.belongsToMany('App/Models/Word', 'wordId', 'synonymId').pivotTable('synonyms');
   }
 
 }

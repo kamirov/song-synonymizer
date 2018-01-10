@@ -11,6 +11,7 @@ class WordSchema extends Schema {
       table.integer('syllablesCount').unsigned()
       table.string('ultima')
       table.boolean('hasCheckedSynonyms').default(false)
+      table.boolean('isEmpty').default(false);
       table.timestamp('createdAt');
       table.timestamp('updatedAt');
     })

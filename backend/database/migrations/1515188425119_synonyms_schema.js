@@ -8,6 +8,7 @@ class SynonymsSchema extends Schema {
       table.increments()
       table.string('wordId')
       table.string('synonymId')
+      table.unique(['wordId', 'synonymId']);
     })
   }
 
