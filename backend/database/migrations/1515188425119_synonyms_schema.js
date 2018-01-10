@@ -6,8 +6,10 @@ class SynonymsSchema extends Schema {
   up () {
     this.create('synonyms', (table) => {
       table.increments()
-      table.string('wordId')
-      table.string('synonymId')
+      table.integer('wordId')
+      table.foreign('wordId').references('words.id');
+      table.integer('synonymId')
+      table.foreign('synonymId').references('words.id');
       table.unique(['wordId', 'synonymId']);
     })
   }

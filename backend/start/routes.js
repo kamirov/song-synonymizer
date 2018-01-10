@@ -20,4 +20,4 @@ Route.post('/words/add-new', 'WordsController.parseAndAddNew')
 
 Route.resource('synonymizations', 'SynonymizationsController').apiOnly();
 
-Route.get('/synonymize', 'SynonymsController.synonymize')
+Route.post('/synonymize', 'SynonymsController.synonymize')
