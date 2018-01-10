@@ -1,8 +1,8 @@
 'use strict'
 
-const Model = use('Model');
+const AbstractModel = use('App/Models/AbstractModel')
 
-class Synonymization extends Model {
+class Synonymization extends AbstractModel {
 
 }
 

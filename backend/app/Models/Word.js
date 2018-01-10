@@ -1,9 +1,12 @@
 'use strict'
 
-const Model = use('Model')
+const AbstractModel = use('App/Models/AbstractModel')
 
-class Word extends Model {
+class Word extends AbstractModel {
 
+  synonyms() {
+    return this.belongsToMany('App/Models/Word')
+  }
 
 }
 
