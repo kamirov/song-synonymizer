@@ -1,14 +1,14 @@
 'use strict'
 
+const Logger = use('Logger');
+
 const SynonymService = use('App/Services/SynonymService');
 
 class SynonymController {
   async synonymize({request}) {
     let synonymService = new SynonymService;
-    let text = request.get('text');
-
-    synonymService.setFlags(request.get('flags'));
-    return await synonymService.synonymize(text);
+    synonymService.setFlags(request.post().flags);
+    return await synonymService.synonymize(request.post().text);
   }
 }
 
