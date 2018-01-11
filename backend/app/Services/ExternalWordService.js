@@ -4,6 +4,7 @@ const fetch = require('node-fetch');
 
 const Redis = use('Redis')
 const Env = use('Env');
+const Logger = use('Logger');
 
 const WordService = use('App/Services/WordService');
 
@@ -19,7 +20,7 @@ class ExternalWordService {
       synonyms: ExternalWordService.API_ROOT + ':word/synonyms'
     }
   }
-  static get DAILY_API_CALLS_LIMIT() { return 1000 }
+  static get DAILY_API_CALLS_LIMIT() { return 100 }
   static get API_ROOT() { return 'https://wordsapiv1.p.mashape.com/words/' }
 
   // Request constants
@@ -46,10 +47,7 @@ class ExternalWordService {
    * @returns {Promise<Object>}
    */
   async getSummary(name) {
-    await this._checkRemainingApiCallsCount();
-    await this._incrementApiCallsCount();
-
-    let response = await fetch(
+    let response = await this._fetch(
       ExternalWordService.API_ENDPOINTS.summary.replace(':word', name),
       ExternalWordService.REQUEST_GET_CONFIG);
 
@@ -64,10 +62,8 @@ class ExternalWordService {
    * @returns {Promise<string[]>}
    */
   async getSynonyms(word) {
-    await this._checkRemainingApiCallsCount();
-    await this._incrementApiCallsCount();
 
-    let response = await fetch(
+    let response = await this._fetch(
       ExternalWordService.API_ENDPOINTS.synonyms.replace(':word', word),
       ExternalWordService.REQUEST_GET_CONFIG);
 
@@ -121,30 +117,41 @@ class ExternalWordService {
   }
 
 
+  async _fetch(endpoint, config) {
+    Logger.info('About to make an API call to:', endpoint);
+    await this._updateApiCallsCount();
+    return await fetch(endpoint, config);
+  }
+
+
   /**
    * Check whether we've made too many calls to the API today
    * @private
    */
-  async _checkRemainingApiCallsCount() {
+  async _updateApiCallsCount() {
     let remainingApiCallsCount = await Redis.get('remainingApiCallsCount');
-
-    Logger.info('API calls count (in check): ' + remainingApiCallsCount);
 
     if (remainingApiCallsCount > 0) {
       await Redis.set(
         'remainingApiCallsCount',
         remainingApiCallsCount-1,
+        'EX',
         this._getTimeToMidnight());
 
     } else if (remainingApiCallsCount === 0) {
-      throw Error("Reached API calls limit");
+      throw Error("Exceeded daily Words API limit");
 
     } else {
       await Redis.set(
         'remainingApiCallsCount',
         ExternalWordService.DAILY_API_CALLS_LIMIT,
+        'EX',
         this._getTimeToMidnight());
     }
+
+    let remainingCallsCount = await Redis.get('remainingApiCallsCount');
+    Logger.info('Remaining API calls:', remainingCallsCount)
+
   }
 
 
