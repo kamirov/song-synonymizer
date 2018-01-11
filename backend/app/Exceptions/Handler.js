@@ -25,6 +25,7 @@ class ExceptionHandler {
     let errorStructure = {
       status: error.status,
       message: error.message,
+      stack: error.stack
     };
     response.status(error.status).send(errorStructure);
   }
