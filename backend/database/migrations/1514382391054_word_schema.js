@@ -7,7 +7,10 @@ class WordSchema extends Schema {
   up () {
     this.create('words', (table) => {
       table.increments()
+
       table.string('name').notNullable()
+      table.unique('name');
+
       table.integer('syllablesCount').unsigned()
       table.string('ultima')
       table.boolean('hasCheckedSynonyms').default(false)
