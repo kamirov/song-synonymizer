@@ -20,7 +20,10 @@ class ExternalWordService {
       synonyms: ExternalWordService.API_ROOT + ':word/synonyms'
     }
   }
+
+  // See https://www.wordsapi.com/pricing
   static get DAILY_API_CALLS_LIMIT() { return 2000 }
+
   static get API_ROOT() { return 'https://wordsapiv1.p.mashape.com/words/' }
 
   // Request constants
