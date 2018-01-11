@@ -37,7 +37,7 @@ class WordStorageService {
     let words;
 
     // Remove punctuation and split by space or new line
-    words = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\d]/g, '').split(/[ \n]/);
+    words = text.replace(/[.,\/#!$%\^&\*\?;:{}=\-_`~()\d]/g, '').split(/[ \n]/);
 
     // Depluralize
     words = words.map((word) => {
