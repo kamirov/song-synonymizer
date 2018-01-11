@@ -12,7 +12,9 @@ class WordController {
 
   async parseAndAddNew({request}) {
     let text = request.post().text;
-    return await (new WordStorageService).addNewWords(text);
+    let newWords = await (new WordStorageService).addNewWords(text);
+
+    return { newWords };
   }
 }
 

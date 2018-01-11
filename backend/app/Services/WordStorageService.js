@@ -22,9 +22,11 @@ class WordStorageService {
 
   async addNewWords(text) {
     let words = this.splitIntoUsableWords(text);
-    await words.forEach(async name => {
+    for (let name of words) {
       await this._addNewWordWithSynonyms(name);
-    });
+    }
+
+    return this.newWords;
   }
 
 
@@ -98,7 +100,7 @@ class WordStorageService {
     let synonymNames = await this.externalWordService.getSynonyms(word.name);
     Logger.info(synonymNames);
 
-    synonymNames.forEach(async synonymName => {
+    for (let synonymName of synonymNames) {
       let synonym = await Word.findBy('name', synonymName);
       if (!synonym) {
         synonym = await this._addNewWord(synonymName);
@@ -110,7 +112,7 @@ class WordStorageService {
 
       // TODO: Really don't like that this is done for each synonym. Should do this as a bulk operation
       await word.synonyms().attach(synonym.id);
-    });
+    }
 
     word.hasCheckedSynonyms = true;
     await word.save();
