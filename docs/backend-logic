@@ -29,17 +29,38 @@
           - Add synonym relationship
 
 
-== Synonymizing (outdated) ==
+== Synonymizing ==
 - Split paragraph into lines
 - For each line:
+    - If preserveLineSyllableCount:
+        - Check if any original words have an unknown number of syllables:
+            - For each word, if syllablesCount = null, then skip the line entirely (we can't preserve the original number of line syllables if we don't know it)
     - For each word:
-        - If is pronoun and preservePronouns, skip word
-        - If is article and preserveArticles, skip word
-        - Get synonyms (if preserveWordSyllableCount, only get syns with same syl count)
-        - If preserveLineRhyme and word is last word in line:
-            - Replace with random synonym with same ultima (if exists)
-        - Else:
-            - Replace with random synonym (if preserveWordRhyme, get first syn with same ultima). If no syn matches, do nothing
+        - Set isPlural for the word, then singularize word
+        - Generate a list of replacements:
+            - If is pronoun/article/conjunction and preserve<wordClass> is true:
+                - Replacement is only the word itself
+            - Else:
+                - Get synonyms:
+                    - If preserveWordSyllableCount, only get synonyms with same syllable count (and only if original word has a known syl count)
+                    - If preserveLineSyllableCount, only get synonyms with a valid syl count
+                    - If preserveWordRhyme, only get synonyms with same ultima
+                    - If preserveLineRhyme and word is last word in line, only get synonyms with same ultima
+                - If synonyms exist:
+                    - Populate replacements with synonyms for each word
+                - Else:
+                    - Replacement is only the word itself
+    - If preserveLineSyllableCount:
+        - Get lineSylCount (add up original syl counts)
+        - Generate valid synonym groupings:
+            - Iterate through all possible combinations of syllables
+            - If the lineSylCount of a combination is = to the original lineSylCount, store the combination
+        - Select a random synonym grouping
+    - Else:
+        - For each word:
+            - Replace word with random replacement
+            - If isPlural set for the word, pluralize replacement
+
 
 Flags
     - preserveWordSyllableCount
