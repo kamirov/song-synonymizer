@@ -3,8 +3,10 @@
 const pluralize = require('pluralize');
 
 const Logger = use('Logger');
+const Database = use('Database');
 
 const WordService = use('App/Services/WordService');
+const Word = use('App/Models/Word');
 
 class SynonymService {
 
@@ -29,6 +31,11 @@ class SynonymService {
       preserveConjunctions: 'isConjunction'
     };
   }
+  static get DISQUALIFIED_WORD() {
+    return {
+      isDisqualified: true
+    }
+  }
 
 
   constructor() {
@@ -42,55 +49,132 @@ class SynonymService {
     this._flags = Object.assign({}, SynonymService.DEFAULT_FLAGS, flags);
   }
 
-  synonymize(text) {
+
+  async synonymize(text) {
     let lines = this._splitTextIntoLines(text);
-    lines.forEach(line => {
+    let linesPromises = lines.map(async line => {
       let tokens = this._splitLineIntoTokens(line);
 
-      let replacementsList = tokens.forEach((token, tokenIdx) => {
+      console.log(tokens);
+
+      let synonymPromises = tokens.map(async (token, tokenIdx) => {
         if (this._isPunctuation(token)) {
-          return;
+          return Object.assign({}, SynonymService.DISQUALIFIED_WORD, {
+            name: token
+          });
         }
 
-        let tokenIsPluralized = pluralize.isPluralized(token);
-        let singularToken = token;
-        if (tokenIsPluralized) {
-          singularToken = pluralize.singular(token);
+        // Singularize and keep track of pluralization status
+        let sanitizedToken = this._sanitizeToken(token);
+        let tokenIsPlural = pluralize.isPlural(sanitizedToken);
+        let singularToken = sanitizedToken;
+        if (tokenIsPlural) {
+          singularToken = pluralize.singular(sanitizedToken);
         }
 
-        if (this._isWordExcludedByClass(singularToken)) {
-          return [token]; // TODO: Get word using model, format as {name, syllablesCount}
-        }
+        let isLastWord = tokenIdx === (tokens.length-1)
+        let word = await this._getWordAndSynonyms(singularToken, isLastWord);
 
-        // TODO: Get syn using model (use a scope to limit by syllables if preserveWordSyllableCount)
-        // TODO: When getting syn, should scope by preserveWordSyllableCount, preserveWordRhyme, and (if last word and !preserveWordRhyme) by preserveLineRhyme*
-        // TODO: synonyms should be array of {name, syllablesCount}
-        let synonyms = []; // tmp
-
-        if (synonyms.length) {
-          if (tokenIsPluralized) {
-            return synonyms.map(synonym => pluralize.plural(synonym));
-          } else {
-            return synonyms;
-          }
-        } else {
-          return [token]; // TODO: Get word using model, format as {name, syllablesCount}
-        }
+        return word;
       });
+
+      let wordsWithSynonyms = await Promise.all(synonymPromises);
+
+      let replacements = await this._replaceWordsWithSynonyms(wordsWithSynonyms);
+      // return replacements;
+      return replacements.join(' ');
     });
+
+    // return await Promise.all(linesPromises);
+    return (await Promise.all(linesPromises)).join('\n');
   }
+
+
+  async _replaceWordsWithSynonyms(wordsWithSynonyms) {
+
+    let replacements;
+    if (this._flags.preserveLineSyllableCount) {
+      // TODO: Fill in
+    } else {
+      // Easy mode
+      replacements = wordsWithSynonyms.map(word => {
+        if (!word.isDisqualified) {
+          word = word.toJSON();
+        }
+        if (word.synonyms && word.synonyms.length) {
+          return this._getRandomArrayElement(word.synonyms).name;
+        } else {
+          return word.name;
+        }
+      })
+    }
+
+    // return wordsWithSynonyms;
+    return replacements
+  }
+
+
+  _getRandomArrayElement(array) {
+    // TODO: Should move to an array helper class
+    return array[Math.floor(Math.random()*array.length)];
+  }
+
+
+  async _getWordAndSynonyms(token, isLastWord) {
+
+    let wordQuery = Word
+      .query()
+      .where('name', token)
+
+    if (!this._isWordExcludedByClass(token)) {
+      let synonymFilter = builder => {
+        if (this._flags.preserveWordSyllableCount
+          || (this._flags.preserveLineSyllableCount && isLastWord)) {
+          // TODO: Feels like there's a way to do this without a subquery
+          let subquery = Database.select('syllablesCount')
+            .from('words')
+            .where('name', token);
+
+          builder.where('syllablesCount', subquery)
+        }
+
+        if (this._flags.preserveWordRhyme
+          || (this._flags.preserveLineRhyme && isLastWord)) {
+          // TODO: Feels like there's a way to do this without a subquery
+          let subquery = Database.select('ultima')
+            .from('words')
+            .where('name', token);
+
+          builder.where('ultima', subquery)
+        }
+      };
+
+      wordQuery.with('synonyms', synonymFilter);
+    }
+
+    return await wordQuery.first();
+  }
+
+
+  _sanitizeToken(token) {
+    return token.replace(/[.,\/#!$%\^&\*\?;:{}=\-_`~()\d]/g, '');
+  }
+
 
   _isPunctuation(token) {
-    // TODO: Some regex check
+    return token.replace(/[.,\/#!$%\^&\*\?;:{}=\-_`~()\d]/g, '').length === 0;
   }
+
 
   _splitTextIntoLines(text) {
-
+    return text.split('\n');
   }
+
 
   _splitLineIntoTokens(line) {
-
+    return line.split(/[ \n]/);
   }
+
 
   _isWordExcludedByClass(word) {
     for (let flag in SynonymService.CLASS_FLAGS_AND_CHECKS) {
