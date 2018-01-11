@@ -25,7 +25,7 @@ class ExceptionHandler {
     let errorStructure = {
       status: error.status,
       message: error.message,
-      stack: error.stack
+      stack: error.stack.replace(/[\n] {4}/g, ' ')    // Silly formatting
     };
     response.status(error.status).send(errorStructure);
   }
