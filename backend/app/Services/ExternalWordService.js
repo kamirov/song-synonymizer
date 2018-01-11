@@ -20,7 +20,7 @@ class ExternalWordService {
       synonyms: ExternalWordService.API_ROOT + ':word/synonyms'
     }
   }
-  static get DAILY_API_CALLS_LIMIT() { return 100 }
+  static get DAILY_API_CALLS_LIMIT() { return 2000 }
   static get API_ROOT() { return 'https://wordsapiv1.p.mashape.com/words/' }
 
   // Request constants
@@ -129,7 +129,7 @@ class ExternalWordService {
    * @private
    */
   async _updateApiCallsCount() {
-    let remainingApiCallsCount = await Redis.get('remainingApiCallsCount');
+    let remainingApiCallsCount = parseInt(await Redis.get('remainingApiCallsCount'));
 
     if (remainingApiCallsCount > 0) {
       await Redis.set(
