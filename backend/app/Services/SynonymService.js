@@ -1,6 +1,9 @@
 'use strict'
 
 const pluralize = require('pluralize');
+
+const Logger = use('Logger');
+
 const WordService = use('App/Services/WordService');
 
 class SynonymService {
@@ -39,9 +42,8 @@ class SynonymService {
     this._flags = Object.assign({}, SynonymService.DEFAULT_FLAGS, flags);
   }
 
-  synonymizeText(text) {
+  synonymize(text) {
     let lines = this._splitTextIntoLines(text);
-
     lines.forEach(line => {
       let tokens = this._splitLineIntoTokens(line);
 
