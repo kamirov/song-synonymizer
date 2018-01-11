@@ -36,6 +36,9 @@ class WordStorageService {
   splitIntoUsableWords(text) {
     let words;
 
+    // Lowercase
+    text = text.toLowerCase();
+
     // Remove punctuation and split by space or new line
     words = text.replace(/[.,\/#!$%\^&\*\?;:{}=\-_`~()\d]/g, '').split(/[ \n]/);
 
