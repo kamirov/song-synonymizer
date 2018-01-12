@@ -60,7 +60,7 @@ class WordStorageService {
     words = words.filter(word => !word.match(/[^\x00-\x7F]/g));
 
     // Uncontract
-    words = words.map(word => this.wordService.uncontract(word));
+    words = words.map(word => this.wordService.uncontract(word).word);
 
     // Remove ignored words
     words = words.filter(word => !WordService.IGNORED_WORDS.includes(word));
@@ -101,7 +101,8 @@ class WordStorageService {
     let synonymNames = await this.externalWordService.getSynonyms(word.name);
     Logger.info(synonymNames);
 
-    for (let synonymName of synonymNames) {
+    // for (let synonymName of synonymNames) {
+    synonymNames.forEach(async synonymName => {
       let synonym = await Word.findBy('name', synonymName);
       if (!synonym) {
         synonym = await this._addNewWord(synonymName);
@@ -113,7 +114,7 @@ class WordStorageService {
 
       // TODO: Really don't like that this is done for each synonym. Should do this as a bulk operation
       await word.synonyms().attach(synonym.id);
-    }
+    })
 
     word.hasCheckedSynonyms = true;
     await word.save();
