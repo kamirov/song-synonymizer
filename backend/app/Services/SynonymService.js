@@ -1,6 +1,7 @@
 'use strict'
 
 const pluralize = require('pluralize');
+const kontractions = require('kontractions');
 
 const Logger = use('Logger');
 const Database = use('Database');
@@ -36,6 +37,14 @@ class SynonymService {
       isDisqualified: true
     }
   }
+  static get DEFAULT_TOKEN_STATE() {
+    return {
+      plural: false,
+      punctuationAfter: null,
+      punctuationBefore: null,
+      capitalized: false,
+    }
+  }
 
 
   constructor() {
@@ -55,42 +64,66 @@ class SynonymService {
     let linesPromises = lines.map(async line => {
       let tokens = this._splitLineIntoTokens(line);
 
-      console.log(tokens);
+      console.log('tokens', tokens);
 
+      let tokenStates = [];
       let synonymPromises = tokens.map(async (token, tokenIdx) => {
         if (this._isPunctuation(token)) {
-          return Object.assign({}, SynonymService.DISQUALIFIED_WORD, {
+          let word = Object.assign({}, SynonymService.DISQUALIFIED_WORD, {
             name: token
           });
+
+          tokenStates.push(SynonymService.DEFAULT_TOKEN_STATE);
+          return word;
         }
 
-        // Singularize and keep track of pluralization status
-        let sanitizedToken = this._sanitizeToken(token);
-        let tokenIsPlural = pluralize.isPlural(sanitizedToken);
-        let singularToken = sanitizedToken;
-        if (tokenIsPlural) {
-          singularToken = pluralize.singular(sanitizedToken);
-        }
+        let {sanitizedToken, tokenState} = this._sanitizeToken(token);
+        tokenStates.push(tokenState);
 
         let isLastWord = tokenIdx === (tokens.length-1)
-        let word = await this._getWordAndSynonyms(singularToken, isLastWord);
 
+        let word = await this._getWordAndSynonyms(sanitizedToken, isLastWord);
+        // console.log(sanitizedToken, tokenStates);
         return word;
       });
 
       let wordsWithSynonyms = await Promise.all(synonymPromises);
+      let unmodifiedReplacements = await this._replaceWordsWithSynonyms(wordsWithSynonyms);
+      // return unmodifiedReplacements;
+      let replacements = this._applyOriginalTokenStateToWords(unmodifiedReplacements, tokenStates);
 
-      let replacements = await this._replaceWordsWithSynonyms(wordsWithSynonyms);
-      // return replacements;
-      return replacements.join(' ');
+      return replacements;
+      // return unmodifiedReplacements;
+      // return replacements.join(' ');
     });
 
-    // return await Promise.all(linesPromises);
-    return (await Promise.all(linesPromises)).join('\n');
+    return await Promise.all(linesPromises);
+    // return (await Promise.all(linesPromises)).join('\n');
+  }
+
+
+  _applyOriginalTokenStateToWords(unmodifiedReplacements, tokenStates) {
+    return unmodifiedReplacements.map((wordName, idx) => {
+      let tokenState = tokenStates[idx];
+
+      if (tokenState.plural) {
+        wordName = pluralize.plural(wordName);
+      }
+
+      if (tokenState.capitalized) {
+        wordName = wordName.charAt(0).toUpperCase() + wordName.slice(1);
+      }
+
+      wordName = tokenState.punctuationBefore + wordName + tokenState.punctuationAfter;
+
+      return wordName;
+    })
   }
 
 
   async _replaceWordsWithSynonyms(wordsWithSynonyms) {
+
+    // return wordsWithSynonyms;
 
     let replacements;
     if (this._flags.preserveLineSyllableCount) {
@@ -157,12 +190,34 @@ class SynonymService {
 
 
   _sanitizeToken(token) {
-    return token.replace(/[.,\/#!$%\^&\*\?;:{}=\-_`~()\d]/g, '');
+
+    let depunctuatedToken = token.replace(/[.,\/#!$%\^&\*\?;:{}'=\-_`~()\d]/g, '');
+
+    let sanitizedToken =
+      pluralize.singular(depunctuatedToken.toLowerCase());
+
+    let tokenState = {
+      plural: pluralize.isPlural(depunctuatedToken),
+      punctuationAfter: token.substring(token.indexOf(depunctuatedToken) + depunctuatedToken.length),
+      punctuationBefore: token.substring(0, token.indexOf(depunctuatedToken)),
+      capitalized: this._startsWithCapital(depunctuatedToken)
+    };
+
+    return {
+      sanitizedToken,
+      tokenState
+    }
   }
 
 
-  _isPunctuation(token) {
-    return token.replace(/[.,\/#!$%\^&\*\?;:{}=\-_`~()\d]/g, '').length === 0;
+  _startsWithCapital(string) {
+    // Credit to https://stackoverflow.com/a/46566773
+    // TODO: Should go in a string helper
+    return string.charCodeAt(0) >= 65 && string.charCodeAt(0) < 97;
+  }
+
+  _isPunctuation(string) {
+    return string.replace(/[.,\/#!$%\^&\*\?;:{}=\-_`~()\d]/g, '').length === 0;
   }
 
 

@@ -22,7 +22,7 @@ class WordService {
   }
   static get PRONOUNS() {
     return [
-      'I', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them',
+      'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them',
       'what', 'who',
       'it', 'whom',
       'mine', 'yours', 'his', 'hers', 'ours', 'theirs',
@@ -41,6 +41,16 @@ class WordService {
     return [
       'the', 'an', 'a'
     ];
+  }
+  static get CONTRACTIONS() {
+    return [
+      "n't", "'s", "'m", "'re", "'ve", "'d", "'ll"
+    ]
+  }
+  static get IGNORED_WORDS() {
+    // TODO: Should probably put these in a DB table
+    return [
+    ]
   }
 
 
