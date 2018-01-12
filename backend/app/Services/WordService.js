@@ -57,6 +57,12 @@ class WordService {
     ];
   }
 
+  static get GENERAL_CONTRACTIONS() {
+    return [
+      "'ve", "'s", "'"
+    ]
+  }
+
   static get IGNORED_WORDS() {
     // TODO: Should probably put these in a DB table
     return [
@@ -129,6 +135,20 @@ class WordService {
 
     return ultima;
   }
+
+
+  uncontract(word) {
+    WordService.GENERAL_CONTRACTIONS.forEach(contraction => {
+      // TODO: We'll encounter a problem potentially with multiple contractions on one word
+      // TODO: Might have problems with words that have ' in the middle somewhere
+      if (word.slice(-contraction.length) === contraction) {
+        word = word.slice(0, -contraction.length)
+      }
+    });
+
+    return word;
+  }
+
 }
 
 module.exports = WordService;

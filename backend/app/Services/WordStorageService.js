@@ -59,9 +59,8 @@ class WordStorageService {
     // TODO: Should we really remove these?
     words = words.filter(word => !word.match(/[^\x00-\x7F]/g));
 
-    // Remove words with punctuation
-    // TODO: Should we really remove these?
-    // words = words.filter(word => !word.match(/['"]/g));
+    // Uncontract
+    words = words.map(word => this.wordService.uncontract(word));
 
     // Remove ignored words
     words = words.filter(word => !WordService.IGNORED_WORDS.includes(word));
@@ -70,7 +69,6 @@ class WordStorageService {
 
     return words;
   }
-
 
   // Private methods
 
