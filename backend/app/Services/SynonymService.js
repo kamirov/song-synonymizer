@@ -173,7 +173,9 @@ class SynonymService {
           word = word.toJSON();
         }
         if (word.synonyms && word.synonyms.length) {
-          return this._getRandomArrayElement(word.synonyms).name;
+          let options = word.synonyms.slice();
+          options.push({ name: word.name });
+          return this._getRandomArrayElement(options).name;
         } else {
           return word.name;
         }
@@ -230,10 +232,8 @@ class SynonymService {
   _sanitizeToken(token) {
 
     let {word: uncontractedToken, contraction} = this._wordService.uncontract(token);
-    let depunctuatedToken = uncontractedToken.replace(/[.,\/#”!$%\^&\*\?;:{}=\-_`~()\d]/g, '');
-
-    let sanitizedToken =
-      pluralize.singular(depunctuatedToken.toLowerCase());
+    let depunctuatedToken = uncontractedToken.replace(WordService.PUNCTUATION_REGEX, '');
+    let sanitizedToken = pluralize.singular(depunctuatedToken.toLowerCase());
 
     let tokenState = {
       contraction: contraction,

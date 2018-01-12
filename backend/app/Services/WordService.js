@@ -14,6 +14,10 @@ class WordService {
     }
   }
 
+  static get PUNCTUATION_REGEX() {
+    return /[.,\/#”"!$%\^&\*\?;:{}=\-_`~()\d]/g;
+  }
+
   static get VOWELS() {
     return [
       'a', 'e', 'i', 'o', 'u'
