@@ -48,7 +48,10 @@ class SynonymService {
       capitalized: false,
     }
   }
-
+  static get ASSUMED_SYLLABLE_COUNT() {
+    // This gets most cases where a word from the original text had an unknown syllable count
+    return 1;
+  }
 
   constructor() {
     this._wordService = new WordService();
@@ -67,9 +70,6 @@ class SynonymService {
     let linesPromises = lines.map(async line => {
       let tokens = this._splitLineIntoTokens(line);
 
-
-      console.log('tokens', tokens);
-
       let tokenStates = [];
       let synonymPromises = tokens.map(async (token, tokenIdx) => {
         if (this._isPunctuation(token)) {
@@ -83,7 +83,7 @@ class SynonymService {
 
         let {sanitizedToken, tokenState} = this._sanitizeToken(token);
 
-        console.log(token, sanitizedToken, tokenState);
+        // console.log(token, sanitizedToken, tokenState);
 
         // TODO: Don't like this repetition
         if (this._wordService.isIgnoredWord(sanitizedToken)) {
@@ -108,7 +108,7 @@ class SynonymService {
       let unmodifiedReplacements = await this._replaceWordsWithSynonyms(wordsWithSynonyms);
       // return unmodifiedReplacements;
       let replacements = this._applyOriginalTokenStateToWords(unmodifiedReplacements, tokenStates);
-      let articleCorrectedReplacements = this._correctArticles(replacements);
+      this._correctArticles(replacements);
 
       // return replacements;
       // return unmodifiedReplacements;
@@ -165,7 +165,19 @@ class SynonymService {
 
     let replacements;
     if (this._flags.preserveLineSyllableCount) {
-      // TODO: Fill in
+      // TODO: Fill this in
+      // Hard mode
+      // let originalSyllableCount = wordsWithSynonyms.reduce((runningCount, word) => {
+      //   if (!word.name || this._isPunctuation(word.name)) {
+      //     return runningCount
+      //   } else {
+      //     return runningCount + (word.syllablesCount || SynonymService.ASSUMED_SYLLABLE_COUNT)
+      //   }
+      // }, 0);
+      //
+      // console.log('originalSyllableCount', originalSyllableCount);
+
+      replacements = wordsWithSynonyms.map(word => word.name)
     } else {
       // Easy mode
       replacements = wordsWithSynonyms.map(word => {
@@ -267,7 +279,7 @@ class SynonymService {
 
 
   _splitLineIntoTokens(line) {
-    return line.split(/[ \n]/);
+    return line.trim().split(/[ \n]/);
   }
 
 
