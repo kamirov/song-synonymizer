@@ -61,7 +61,10 @@ class WordStorageService {
 
     // Remove words with punctuation
     // TODO: Should we really remove these?
-    words = words.filter(word => !word.match(/['"]/g));
+    // words = words.filter(word => !word.match(/['"]/g));
+
+    // Remove ignored words
+    words = words.filter(word => !WordService.IGNORED_WORDS.includes(word));
 
     Logger.info('Parsed words: ' + words);
 

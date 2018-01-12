@@ -47,9 +47,36 @@ class WordService {
       "n't", "'s", "'m", "'re", "'ve", "'d", "'ll"
     ]
   }
+  static get PREPOSITIONS() {
+    return [
+      "with", "at", "from", "into", "during", "including", "until", "against", "among",
+      "throughout", "despite", "towards", "upon", "concerning", "of", "to", "in", "for",
+      "on", "by", "about", "like", "through", "over", "before", "between", "after",
+      "since", "without", "under", "within", "along", "following", "across", "behind",
+      "beyond", "plus", "except", "but", "up", "out", "around", "down", "off", "above", "near"
+    ];
+  }
+
   static get IGNORED_WORDS() {
     // TODO: Should probably put these in a DB table
     return [
+      // Common contractions (mostly from https://en.wikipedia.org/wiki/Wikipedia:List_of_English_contractions)
+      "ain't", "amn't", "aren't", "can't", "cain't", "'cause", "could've", "couldn't",
+      "daren't", "daresn't", "dasn't", "didn't", "doesn't", "don't", "gonna", "gotta",
+      "hadn't", "hasn't", "haven't", "he'd", "he'll", "he's", "how'd", "how'll", "how's",
+      "I'd", "I'll", "I'm", "I've", "isn't", "it'd", "it'll", "it's", "let's", "ma'am",
+      "mayn't", "may've", "mightn't", "might've", "mustn't", "must've", "needn't", "ne'er",
+      "o'clock", "o'er", "ol'", "oughtn't", "shan't", "she'd", "she'll", "she's", "should've",
+      "shouldn't", "should of", "somebody's", "someone's", "something's", "that'll", "that're",
+      "that's", "that'd", "there'd", "there're", "there's", "these're", "they'd", "they'll",
+      "they're", "they've", "this's", "those're", "'tis", "'twas", "wasn't", "we'd", "we'd've",
+      "we'll", "we're", "we've", "weren't", "what'd", "what'll", "what're", "what's", "what've",
+      "when's", "where'd", "where're", "where's", "where've", "which's", "who'd", "who'd've",
+      "who'll", "who're", "who's", "who've", "why'd", "why're", "why's", "won't", "would've",
+      "wouldn't", "y'all", "you'd", "you'll", "you're", "you've", "noun's",
+
+      // Miscellaneous
+      "m'am", "ma'am"
     ]
   }
 
