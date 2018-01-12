@@ -74,7 +74,6 @@ class WordService {
   }
 
   static get IGNORED_WORDS() {
-    // TODO: Should probably put these in a DB table
     return [
       // Common contractions (mostly from https://en.wikipedia.org/wiki/Wikipedia:List_of_English_contractions)
       "ain't", "amn't", "aren't", "can't", "cain't", "'cause", "could've", "couldn't",
@@ -90,6 +89,10 @@ class WordService {
       "when's", "where'd", "where're", "where's", "where've", "which's", "who'd", "who'd've",
       "who'll", "who're", "who's", "who've", "why'd", "why're", "why's", "won't", "would've",
       "wouldn't", "y'all", "you'd", "you'll", "you're", "you've", "noun's",
+
+      // Words that tend to synonymize poorly
+      // TODO: Should probably put these in a DB table
+      "need", "twenty",
 
       // Miscellaneous
       "m'am", "ma'am"
