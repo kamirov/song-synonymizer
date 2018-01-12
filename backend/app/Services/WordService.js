@@ -14,6 +14,12 @@ class WordService {
     }
   }
 
+  static get VOWELS() {
+    return [
+      'a', 'e', 'i', 'o', 'u'
+    ]
+  }
+
   static get IPA_VOWELS() {
     return [
       'i', 'y', 'ɨ', 'ʉ', 'ɯ', 'u', 'ɪ', 'ʏ', 'ɪ̈', 'ʊ̈', 'ʊ', 'e', 'ø', 'ɘ', 'ɵ', 'ɤ', 'o', 'e̞', 'ø̞', 'ə', 'ɤ̞',
@@ -59,7 +65,7 @@ class WordService {
 
   static get GENERAL_CONTRACTIONS() {
     return [
-      "'ve", "'s", "'"
+      "'ve", "'s", "'", "'m"
     ]
   }
 
@@ -86,6 +92,10 @@ class WordService {
     ]
   }
 
+  isVowel(letter) {
+    return WordService.VOWELS.includes(letter);
+  }
+
 
   isPronoun(word) {
     return WordService.PRONOUNS.includes(word);
@@ -99,6 +109,15 @@ class WordService {
 
   isArticle(word) {
     return WordService.ARTICLES.includes(word);
+  }
+
+
+  isPreposition(word) {
+    return WordService.PREPOSITIONS.includes(word);
+  }
+
+  isIgnoredWord(word) {
+    return WordService.IGNORED_WORDS.includes(word);
   }
 
 
@@ -138,15 +157,22 @@ class WordService {
 
 
   uncontract(word) {
+
+    let result = {
+      word: word,
+      contraction: null
+    }
+
     WordService.GENERAL_CONTRACTIONS.forEach(contraction => {
       // TODO: We'll encounter a problem potentially with multiple contractions on one word
       // TODO: Might have problems with words that have ' in the middle somewhere
       if (word.slice(-contraction.length) === contraction) {
-        word = word.slice(0, -contraction.length)
+        result.word = word.slice(0, -contraction.length)
+        result.contraction = contraction;
       }
     });
 
-    return word;
+    return result;
   }
 
 }
