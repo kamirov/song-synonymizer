@@ -17,9 +17,10 @@ class SynonymService {
       preserveLineSyllableCount: false,
       preserveWordRhyme: false,
       preserveLineRhyme: false,
-      preservePronouns: false,
-      preserveArticles: false,
-      preserveConjunctions: false
+      preservePronouns: true,
+      preserveArticles: true,
+      preserveConjunctions: true,
+      preservePrepositions: true,
     }
   }
   static get ALLOWABLE_FLAGS() {
@@ -29,7 +30,8 @@ class SynonymService {
     return {
       preservePronouns: 'isPronoun',
       preserveArticles: 'isArticle',
-      preserveConjunctions: 'isConjunction'
+      preserveConjunctions: 'isConjunction',
+      preservePrepositions: 'isPreposition'
     };
   }
   static get DISQUALIFIED_WORD() {
@@ -39,6 +41,7 @@ class SynonymService {
   }
   static get DEFAULT_TOKEN_STATE() {
     return {
+      contraction: null,
       plural: false,
       punctuationAfter: null,
       punctuationBefore: null,
@@ -64,6 +67,7 @@ class SynonymService {
     let linesPromises = lines.map(async line => {
       let tokens = this._splitLineIntoTokens(line);
 
+
       console.log('tokens', tokens);
 
       let tokenStates = [];
@@ -78,6 +82,19 @@ class SynonymService {
         }
 
         let {sanitizedToken, tokenState} = this._sanitizeToken(token);
+
+        console.log(token, sanitizedToken, tokenState);
+
+        // TODO: Don't like this repetition
+        if (this._wordService.isIgnoredWord(sanitizedToken)) {
+          let word = Object.assign({}, SynonymService.DISQUALIFIED_WORD, {
+            name: token
+          });
+
+          tokenStates.push(SynonymService.DEFAULT_TOKEN_STATE);
+          return word;
+        }
+
         tokenStates.push(tokenState);
 
         let isLastWord = tokenIdx === (tokens.length-1)
@@ -91,16 +108,27 @@ class SynonymService {
       let unmodifiedReplacements = await this._replaceWordsWithSynonyms(wordsWithSynonyms);
       // return unmodifiedReplacements;
       let replacements = this._applyOriginalTokenStateToWords(unmodifiedReplacements, tokenStates);
+      let articleCorrectedReplacements = this._correctArticles(replacements);
 
-      return replacements;
+      // return replacements;
       // return unmodifiedReplacements;
-      // return replacements.join(' ');
+      return replacements.join(' ');
     });
 
     return await Promise.all(linesPromises);
     // return (await Promise.all(linesPromises)).join('\n');
   }
 
+  _correctArticles(replacements) {
+    for (let i = 0; i < replacements.length-1; i++) {
+      let nextWordStartsWithVowel = this._wordService.isVowel(replacements[i+1].charAt(0));
+      if (replacements[i] === 'a' && nextWordStartsWithVowel) {
+        replacements[i] = 'an';
+      } else if (replacements[i] === 'an' && !nextWordStartsWithVowel) {
+        replacements[i] = 'a';
+      }
+    }
+  }
 
   _applyOriginalTokenStateToWords(unmodifiedReplacements, tokenStates) {
     return unmodifiedReplacements.map((wordName, idx) => {
@@ -110,11 +138,21 @@ class SynonymService {
         wordName = pluralize.plural(wordName);
       }
 
+      if (tokenState.contraction) {
+        wordName = wordName + tokenState.contraction;
+      }
+
       if (tokenState.capitalized) {
         wordName = wordName.charAt(0).toUpperCase() + wordName.slice(1);
       }
 
-      wordName = tokenState.punctuationBefore + wordName + tokenState.punctuationAfter;
+      if (tokenState.punctuationBefore) {
+        wordName = tokenState.punctuationBefore + wordName;
+      }
+
+      if (tokenState.punctuationAfter) {
+        wordName = wordName + tokenState.punctuationAfter;
+      }
 
       return wordName;
     })
@@ -191,15 +229,17 @@ class SynonymService {
 
   _sanitizeToken(token) {
 
-    let depunctuatedToken = token.replace(/[.,\/#!$%\^&\*\?;:{}'=\-_`~()\d]/g, '');
+    let {word: uncontractedToken, contraction} = this._wordService.uncontract(token);
+    let depunctuatedToken = uncontractedToken.replace(/[.,\/#”!$%\^&\*\?;:{}=\-_`~()\d]/g, '');
 
     let sanitizedToken =
       pluralize.singular(depunctuatedToken.toLowerCase());
 
     let tokenState = {
+      contraction: contraction,
       plural: pluralize.isPlural(depunctuatedToken),
-      punctuationAfter: token.substring(token.indexOf(depunctuatedToken) + depunctuatedToken.length),
-      punctuationBefore: token.substring(0, token.indexOf(depunctuatedToken)),
+      punctuationAfter: uncontractedToken.substring(uncontractedToken.indexOf(depunctuatedToken) + depunctuatedToken.length),
+      punctuationBefore: uncontractedToken.substring(0, uncontractedToken.indexOf(depunctuatedToken)),
       capitalized: this._startsWithCapital(depunctuatedToken)
     };
 
