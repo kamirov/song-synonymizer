@@ -13,7 +13,7 @@ const FlagsList = ({flags, flagDetails, onChange}) => {
                 <Switch
                     checked={flags[key]}
                     disabled={flagDetails[key].disabled}
-                    onChange={onChange}
+                    onChange={() => onChange(key)}
                 />
             }
             label={flagDetails[key].label}
@@ -21,7 +21,9 @@ const FlagsList = ({flags, flagDetails, onChange}) => {
 
         let returned;
         if (flagDetails[key].tooltip) {
-            returned = <Tooltip title={flagDetails[key].tooltip}>
+            returned = <Tooltip
+                key={idx + '-tooltip'}
+                title={flagDetails[key].tooltip}>
                 {formElement}
             </Tooltip>
         } else {

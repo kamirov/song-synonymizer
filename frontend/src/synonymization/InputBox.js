@@ -13,7 +13,7 @@ const InputBox = ({content, classes, onChange}) => {
         id="input"
         label="Original"
         value={content}
-        onChange={onChange}
+        onChange={() => onChange(content)}
         multiline={true}
         fullWidth={true}
         className={classes.textField}

@@ -1,4 +1,4 @@
-export const setFlagsList = flagsList => ({
-    type: 'SET_FLAGSLIST',
-    flagsList
+export const toggleFlag = flag => ({
+    type: 'TOGGLE_FLAG',
+    flag
 })

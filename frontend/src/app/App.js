@@ -1,37 +1,9 @@
 import React, {Component} from 'react';
 import {Grid} from 'material-ui';
 
-import FlagsList from '../flags/FlagsList';
-import InputBox from '../synonymization/InputBox';
-import OutputBox from '../synonymization/OutputBox';
-
-
-const flags = {
-    preserveWordRhyme: false,
-    preserveWordSyllableCount: false,
-    preserveLineRhyme: false,
-    preserveLineSyllableCount: false,
-};
-
-const flagDetails = {
-    preserveWordSyllableCount: {
-        label: "Word syllables",
-        disabled: false
-    },
-    preserveWordRhyme: {
-        label: "Word rhyme",
-        disabled: false
-    },
-    preserveLineSyllableCount: {
-        label: "Line syllables",
-        disabled: true,
-        tooltip: "Currently disabled."
-    },
-    preserveLineRhyme: {
-        label: "Line rhyme",
-        disabled: false
-    }
-}
+import FlagsListContainer from '../flags/FlagsListContainer';
+import InputBoxContainer from '../synonymization/InputBoxContainer';
+import OutputBoxContainer from '../synonymization/OutputBoxContainer';
 
 class App extends Component {
 
@@ -42,13 +14,13 @@ class App extends Component {
                     <Grid item xs={12} sm={10}>
                         <Grid container>
                             <Grid item xs={2}>
-                                <FlagsList flags={flags} flagDetails={flagDetails}></FlagsList>
+                                <FlagsListContainer />
                             </Grid>
                             <Grid item xs={5}>
-                                <InputBox content={"Hey"}></InputBox>
+                                <InputBoxContainer />
                             </Grid>
                             <Grid item xs={5}>
-                                <OutputBox></OutputBox>
+                                <OutputBoxContainer />
                             </Grid>
                         </Grid>
                     </Grid>

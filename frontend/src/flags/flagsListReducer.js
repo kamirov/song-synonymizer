@@ -7,8 +7,8 @@ const initialState = {
 
 const flagsList = (state = initialState, action) => {
     switch (action.type) {
-        case 'SET_FLAGSLIST':
-            return action.flagsList;
+        case 'TOGGLE_FLAG':
+            return {...state,  [action.flag]: !state[action.flag] };
         default:
             return state;
     }

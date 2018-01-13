@@ -1,7 +1,6 @@
 import React from 'react';
 import {withStyles} from 'material-ui/styles';
 import TextField from 'material-ui/TextField';
-import PropTypes from 'prop-types'
 
 const styles = theme => ({
     textField: {
@@ -20,7 +19,7 @@ const OutputBox = ({content, classes}) => {
 }
 
 OutputBox.propTypes = {
-    content: PropTypes.string.isRequired
+    // content: PropTypes.string.isRequired
 }
 
 export default withStyles(styles)(OutputBox);
