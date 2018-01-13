@@ -2,28 +2,35 @@ import React, {Component} from 'react';
 import {Grid} from 'material-ui';
 
 import FlagsList from '../flags/FlagsList';
-import InputBox from '../contentBoxes/InputBox';
-import OutputBox from '../contentBoxes/OutputBox';
+import InputBox from '../synonymization/InputBox';
+import OutputBox from '../synonymization/OutputBox';
 
 
 const flags = {
-    preserveWordSyllableCount: false,
     preserveWordRhyme: false,
-    preserveLineSyllableCount: false,
+    preserveWordSyllableCount: false,
     preserveLineRhyme: false,
-    preservePronouns: true,
-    preserveArticles: true,
-    preserveConjunctions: true
+    preserveLineSyllableCount: false,
 };
 
-const labels = {
-    preserveWordSyllableCount: "Word syllables",
-    preserveWordRhyme: "Word rhyme",
-    preserveLineSyllableCount: "Line syllables",
-    preserveLineRhyme: "Line rhyme",
-    preservePronouns: "Pronouns",
-    preserveArticles: "Articles",
-    preserveConjunctions: "Conjunctions"
+const flagDetails = {
+    preserveWordSyllableCount: {
+        label: "Word syllables",
+        disabled: false
+    },
+    preserveWordRhyme: {
+        label: "Word rhyme",
+        disabled: false
+    },
+    preserveLineSyllableCount: {
+        label: "Line syllables",
+        disabled: true,
+        tooltip: "Currently disabled."
+    },
+    preserveLineRhyme: {
+        label: "Line rhyme",
+        disabled: false
+    }
 }
 
 class App extends Component {
@@ -35,7 +42,7 @@ class App extends Component {
                     <Grid item xs={12} sm={10}>
                         <Grid container>
                             <Grid item xs={2}>
-                                <FlagsList flags={flags} labels={labels}></FlagsList>
+                                <FlagsList flags={flags} flagDetails={flagDetails}></FlagsList>
                             </Grid>
                             <Grid item xs={5}>
                                 <InputBox content={"Hey"}></InputBox>
