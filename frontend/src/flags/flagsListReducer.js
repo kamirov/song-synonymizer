@@ -7,8 +7,8 @@ const initialState = {
 
 const flagsList = (state = initialState, action) => {
     switch (action.type) {
-        case 'SET_FLAGLIST':
-            return action.flagList;
+        case 'SET_FLAGSLIST':
+            return action.flagsList;
         default:
             return state;
     }
