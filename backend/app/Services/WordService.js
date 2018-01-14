@@ -73,6 +73,7 @@ class WordService {
     ]
   }
 
+  // TODO: This should probably be in SynonymService
   static get IGNORED_WORDS() {
     return [
       // Common contractions (mostly from https://en.wikipedia.org/wiki/Wikipedia:List_of_English_contractions)
@@ -92,7 +93,7 @@ class WordService {
 
       // Words that tend to synonymize poorly
       // TODO: Should probably put these in a DB table
-      "need", "twenty",
+      "need", "twenty", "do", "have",
 
       // Miscellaneous
       "m'am", "ma'am"
