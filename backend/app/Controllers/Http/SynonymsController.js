@@ -13,7 +13,7 @@ class SynonymController {
     // Synonymize
     let synonymService = new SynonymService;
 
-    // synonymService.setFlags(JSON.parse(request.post().flags));
+    synonymService.setFlags(request.post().flags);
     let synonymized = await synonymService.synonymize(request.post().text);
 
     return { synonymized };
