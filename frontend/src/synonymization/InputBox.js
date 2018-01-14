@@ -5,6 +5,7 @@ import PropTypes from 'prop-types'
 
 const styles = theme => ({
     textField: {
+        lineHeight: '1.5rem'
     }
 });
 
@@ -25,7 +26,7 @@ class InputBox extends React.Component {
     render() {
         return <TextField
             id="input"
-            label="Original"
+            label="Type the lyrics to a song/poem"
             value={this.state.value}
             onChange={this.handleChange}
             multiline={true}
