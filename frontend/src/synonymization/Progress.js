@@ -1,7 +1,6 @@
 import React from 'react';
 import {withStyles} from 'material-ui/styles';
 import {CircularProgress} from 'material-ui/Progress';
-import purple from 'material-ui/colors/purple';
 
 const styles = theme => ({
     progress: {
@@ -13,7 +12,7 @@ const styles = theme => ({
 const Progress = ({classes}) => {
     return (
         <div className={classes.progress}>
-            <CircularProgress className={classes.progress} style={{ color: purple[500] }} thickness={7} />
+            <CircularProgress className={classes.progress} color={"accent"} thickness={7} />
         </div>
     );
 }

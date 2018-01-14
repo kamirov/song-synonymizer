@@ -15,7 +15,7 @@ function HeaderBar(props) {
     const { classes } = props;
     return (
         <div className={classes.root}>
-            <AppBar position="static">
+            <AppBar position="static" color={"primary"}>
                 <Toolbar>
                     <Typography type="title" color="inherit">
                         Song Synonymizer
