@@ -55,7 +55,7 @@ class ApiService {
                 ApiService.ENDPOINTS.SYNONYMIZE, {
                     ...ApiService.REQUEST_POST_CONFIG,
                     body: JSON.stringify({
-                        // flags: appState.flags,
+                        flags: this._appState.flags,
                         text: this._appState.synonymization.original
                     })
                 });
