@@ -18,7 +18,7 @@ Song Synonymizer is a Node React-Redux app that takes song or poem lyrics and re
 
 ## Known server bugs
 
-- Occasionally "preserve word syllables" flag doesn't actually preserve word syllables. I haven't picked up a pattern yet, but saw it happening with "man" ("mankind" has the same number of syllables as "man", app? really?) and a couple of others I can't recall
+- ~~Occasionally "preserve word syllables" flag doesn't actually preserve word syllables. I haven't picked up a pattern yet, but saw it happening with "man" ("mankind" has the same number of syllables as "man", app? really?) and a couple of others I can't recall~~ Nevermind, this was a data issue. Some data from the Words API is just jenkem
 
 ## To-(but-probably-won't)-do
 
