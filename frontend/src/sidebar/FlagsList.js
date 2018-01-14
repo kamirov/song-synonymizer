@@ -1,5 +1,5 @@
 import React from 'react';
-import {FormControlLabel} from 'material-ui/Form';
+import {FormControlLabel, FormGroup} from 'material-ui/Form';
 import Switch from 'material-ui/Switch';
 import PropTypes from 'prop-types'
 import Tooltip from 'material-ui/Tooltip';
@@ -34,7 +34,7 @@ const FlagsList = ({flags, flagDetails, disabled, onChange}) => {
         return returned;
     });
 
-    return <span>{flagControls}</span>
+    return <FormGroup>{flagControls}</FormGroup>
 }
 
 FlagsList.propTypes = {

@@ -4,20 +4,20 @@ import FlagsList from "./FlagsList";
 
 const flagDetails = {
     preserveWordSyllableCount: {
-        label: "Word syllables",
+        label: "Preserve word syllables",
         disabled: false
     },
     preserveWordRhyme: {
-        label: "Word rhyme",
+        label: "Preserve word rhyme",
         disabled: false
     },
     preserveLineSyllableCount: {
-        label: "Line syllables",
+        label: "Preserve line syllables",
         disabled: true,
         tooltip: "Currently disabled."
     },
     preserveLineRhyme: {
-        label: "Line rhyme",
+        label: "Preserve line rhyme",
         disabled: false
     }
 }
