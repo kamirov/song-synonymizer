@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {Grid} from 'material-ui';
 
-import FlagsListContainer from '../flags/FlagsListContainer';
+import SidebarContainer from '../sidebar/SidebarContainer';
 import InputBoxContainer from '../synonymization/InputBoxContainer';
 import OutputBoxContainer from '../synonymization/OutputBoxContainer';
 
@@ -14,7 +14,7 @@ class App extends Component {
                     <Grid item xs={12} sm={10}>
                         <Grid container>
                             <Grid item xs={2}>
-                                <FlagsListContainer />
+                                <SidebarContainer />
                             </Grid>
                             <Grid item xs={5}>
                                 <InputBoxContainer />
