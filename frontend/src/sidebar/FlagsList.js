@@ -1,10 +1,11 @@
 import React from 'react';
-import {FormControlLabel, FormGroup} from 'material-ui/Form';
+import {FormControlLabel} from 'material-ui/Form';
 import Switch from 'material-ui/Switch';
 import PropTypes from 'prop-types'
 import Tooltip from 'material-ui/Tooltip';
 
-const FlagsList = ({flags, flagDetails, onChange}) => {
+
+const FlagsList = ({flags, flagDetails, disabled, onChange}) => {
 
     const flagControls = Object.keys(flags).map((key, idx) => {
         const formElement = <FormControlLabel
@@ -12,7 +13,7 @@ const FlagsList = ({flags, flagDetails, onChange}) => {
             control={
                 <Switch
                     checked={flags[key]}
-                    disabled={flagDetails[key].disabled}
+                    disabled={flagDetails[key].disabled || disabled}
                     onChange={() => onChange(key)}
                 />
             }
@@ -33,7 +34,7 @@ const FlagsList = ({flags, flagDetails, onChange}) => {
         return returned;
     });
 
-    return <FormGroup>{flagControls}</FormGroup>
+    return <span>{flagControls}</span>
 }
 
 FlagsList.propTypes = {

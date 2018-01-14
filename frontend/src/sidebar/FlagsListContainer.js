@@ -22,9 +22,10 @@ const flagDetails = {
     }
 }
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state, ownProps) => ({
     flags: state.flags,
-    flagDetails: flagDetails
+    flagDetails: flagDetails,
+    disabled: ownProps.disabled
 })
 
 const mapDispatchToProps = dispatch => ({
