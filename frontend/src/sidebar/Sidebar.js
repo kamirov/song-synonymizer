@@ -16,7 +16,7 @@ const styles = theme => ({
     }
 });
 
-const Sidebar = ({classes, onSynonymize, disabled}) => {
+const Sidebar = ({classes, onSynonymize, disabled, synonymizeButtonText}) => {
     return <div>
         <Grid container className={classes.sidebar} justify={"flex-end"}>
             <Grid item xs={12}>
@@ -24,7 +24,7 @@ const Sidebar = ({classes, onSynonymize, disabled}) => {
             </Grid>
             <Grid item xs={12}>
                 <Button raised disabled={disabled} color="accent" onClick={onSynonymize} className={classes.button}>
-                    Synonymize</Button>
+                    {synonymizeButtonText}</Button>
             </Grid>
         </Grid>
     </div>

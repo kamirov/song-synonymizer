@@ -4,9 +4,20 @@ import ApiService from "../api/ApiService";
 import apiConstants from "../api/apiConstants";
 
 
+const getSynonymizeButtonText = (apiStatus) => {
+    switch (apiStatus) {
+        case apiConstants.STATUSES.OK:
+            return 'Resynonymize'
+        default:
+            return 'Synonymize'
+
+    }
+}
+
 const mapStateToProps = state => ({
     content: state.synonymization.original,
-    disabled: state.api.status === apiConstants.STATUSES.FETCHING
+    disabled: state.api.status === apiConstants.STATUSES.FETCHING,
+    synonymizeButtonText: getSynonymizeButtonText(state.api.status)
 })
 
 const mapDispatchToProps = dispatch => ({
