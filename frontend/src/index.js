@@ -8,6 +8,10 @@ import registerServiceWorker from './registerServiceWorker';
 
 let store = createStore(RootReducer);
 
+const unsubscribe = store.subscribe(() =>
+    console.log('New State: ', store.getState())
+);
+
 ReactDOM.render(
     <Provider store={store}>
         <App />
