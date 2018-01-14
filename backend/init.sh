@@ -13,6 +13,8 @@ fi
 npm install
 adonis install @adonisjs/redis
 
+adonis migration:run
+
 # Add symbolic link (needed to let "require" calls work, which are needed for Intellisense)
 #ln -sf /app/app ./node_modules/App
 

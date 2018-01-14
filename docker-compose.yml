@@ -2,44 +2,44 @@ version: "3"
 
 services:
 
-#  frontend:
-#    image: node:9.3
-#    command: npm start
-#    working_dir: /app
-#    volumes:
-#      - ./frontend:/app
-#    environment:
-#      PORT: 4000,
-#    ports:
-#      - "4000:4000"
-#    depends_on:
-#      - backend
-#
-#  backend:
-#    build: ./backend
-#    working_dir: /app
-#    volumes:
-#      - ./backend:/app
-#    environment:
-#      PORT: 3000
-#    ports:
-#      - "3000:3000"
-#    depends_on:
-#      - db
-#      - cache
+  frontend:
+    image: node:9.3
+    command: npm start
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    environment:
+      PORT: 4000,
+      REACT_APP_API: http://localhost:3000
+    ports:
+      - "4000:4000"
+    depends_on:
+      - backend
 
-#  db:
-#    image: postgres:9.5
-#    ports:
-#      - "5432:5432"
-#    environment:
-#      POSTGRES_USER: user
-#      POSTGRES_PASSWORD: pass
-#      POSTGRES_DB: songSynonymizer
+  backend:
+    build: ./backend
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    environment:
+      PORT: 3000
+      FRONTEND_ORIGIN: http://localhost:4000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - cache
+
+  db:
+    image: postgres:9.5
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: songSynonymizer
 
   cache:
     image: redis:3.2.11
-#    expose:
-#      - 6379
-    ports:
-      - "6379:6379"
+    expose:
+      - 6379

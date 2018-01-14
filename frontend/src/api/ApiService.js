@@ -9,7 +9,7 @@ import {setMessage, setOpen} from "../message/messageActions";
 class ApiService {
 
     static get ENDPOINTS() {
-        const BASE_PATH = "http://localhost:3000";
+        const BASE_PATH = process.env.REACT_APP_API;
 
         return {
             SYNONYMIZE: `${BASE_PATH}/synonymize`,
@@ -65,6 +65,9 @@ class ApiService {
                     store.dispatch(setApiStatus(apiConstants.STATUSES.OK));
                     store.dispatch(setSynonymizedText(response.synonymized));
                     store.dispatch(setOpen(false));
+                } else {
+                    store.dispatch(setApiStatus(apiConstants.STATUSES.ERROR));
+                    store.dispatch(setMessage(apiConstants.MESSAGES.ERROR));
                 }
             }
         } catch (e) {

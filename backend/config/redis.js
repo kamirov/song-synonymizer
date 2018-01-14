@@ -11,8 +11,7 @@
 */
 
 const Env = use('Env')
-// const cacheServiceName = 'cache';   // From docker-compose
-const cacheServiceName = 'localhost';   // From docker-compose
+const cacheServiceName = 'cache';   // From docker-compose
 
 module.exports = {
   /*

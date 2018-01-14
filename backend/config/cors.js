@@ -18,7 +18,7 @@ module.exports = {
   | Function - Receives the current origin and should return one of the above values.
   |
   */
-  origin: [Env.get('FRONTEND_ORIGIN')],
+  origin: [process.env.FRONTEND_ORIGIN],
 
   /*
   |--------------------------------------------------------------------------
