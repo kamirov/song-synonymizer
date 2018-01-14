@@ -4,30 +4,52 @@ import {withStyles} from 'material-ui/styles';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
+import IconButton from 'material-ui/IconButton';
+import Tooltip from 'material-ui/Tooltip';
+import Favorite from 'material-ui-icons/Favorite';
+
 
 const styles = {
     root: {
         width: '100%',
     },
+    flex: {
+        flex: 1,
+    },
+    menuButton: {
+        marginLeft: -12,
+        marginRight: 20,
+    },
 };
 
-function HeaderBar(props) {
-    const { classes } = props;
-    return (
-        <div className={classes.root}>
-            <AppBar position="static" color={"primary"}>
-                <Toolbar>
-                    <Typography type="title" color="inherit">
-                        Song Synonymizer
-                    </Typography>
-                </Toolbar>
-            </AppBar>
-        </div>
-    );
+class MenuAppBar extends React.Component {
+    render() {
+        const { classes } = this.props;
+
+        return (
+            <div className={classes.root}>
+                <AppBar position="static" color="primary">
+                    <Toolbar>
+                        <Typography type="title" color="inherit" className={classes.flex}>
+                            Song Synonymizer
+                        </Typography>
+                        <Tooltip
+                            title="Made with &#10084; and JS by kamirov">
+                            <IconButton target="_blank" href="http://andreis.place" rel="noopener noreferrer"
+                                color="contrast"
+                            >
+                                <Favorite />
+                            </IconButton>
+                        </Tooltip>
+                    </Toolbar>
+                </AppBar>
+            </div>
+        );
+    }
 }
 
-HeaderBar.propTypes = {
+MenuAppBar.propTypes = {
     classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(HeaderBar);
+export default withStyles(styles)(MenuAppBar);
