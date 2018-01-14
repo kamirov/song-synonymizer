@@ -1,7 +1,6 @@
 'use strict'
 
 const pluralize = require('pluralize');
-const kontractions = require('kontractions');
 
 const Logger = use('Logger');
 const Database = use('Database');
