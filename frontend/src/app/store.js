@@ -5,11 +5,6 @@ import apiConstants from "../api/apiConstants";
 let initialState = {
     api: {
         status: apiConstants.STATUSES.NONE
-    },
-    newWords: ['a', 'b', 'c'],
-    synonymization: {
-        original: 'Bones',
-        synonymized: "nice"
     }
 }
 
