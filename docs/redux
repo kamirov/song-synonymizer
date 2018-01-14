@@ -1,6 +1,10 @@
 ======= State tree
 
 {
+    api: {
+        status: <enum: API_NONE, API_FETCHING, API_OK, API_ERROR, API_LIMIT_EXCEEDED>,
+    },
+    newWords: <string[]>
     flags: {
         preserveWordSyllableCount: <bool>,
         preserveLineSyllableCount: <bool>,
@@ -19,6 +23,8 @@
 
 ======== Actions
 
+- SET_API_STATUS
+- SET_NEW_WORDS
 - SET_FLAGSLIST
 - SET_HASH
 - SET_ORIGINAL_TEXT
