@@ -49,11 +49,11 @@ const OutputBox = ({content, apiStatus, newWords, classes}) => {
                 if (newWords.length === 1) {
                     newWordMessage = `Hey you just taught me a new word! Thanks to you I know "${newWords[0]}"`
                 } else {
-                    newWordMessage = <div>
+                    newWordMessage = <span>
                         {"Thanks! You just taught me some new words: "}
 
                         {newWords.join(', ')}
-                    </div>
+                    </span>
                 }
                 paperFooter = <Typography className={classes.footer}>
                     {newWordMessage}
