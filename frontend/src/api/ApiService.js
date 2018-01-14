@@ -48,25 +48,31 @@ class ApiService {
         store.dispatch(setApiStatus(apiConstants.STATUSES.FETCHING));
         store.dispatch(setMessage(apiConstants.MESSAGES.FETCHING[0]));
 
-        let addingWordsSucceeded = await this._addNewWords();
+        try {
+            let addingWordsSucceeded = await this._addNewWords();
+            if (addingWordsSucceeded) {
+                let rawResponse = await fetch(
+                    ApiService.ENDPOINTS.SYNONYMIZE, {
+                        ...ApiService.REQUEST_POST_CONFIG,
+                        body: JSON.stringify({
+                            flags: this._appState.flags,
+                            text: this._appState.synonymization.original
+                        })
+                    });
 
-        if (addingWordsSucceeded) {
-            let rawResponse = await fetch(
-                ApiService.ENDPOINTS.SYNONYMIZE, {
-                    ...ApiService.REQUEST_POST_CONFIG,
-                    body: JSON.stringify({
-                        flags: this._appState.flags,
-                        text: this._appState.synonymization.original
-                    })
-                });
-
-            if (rawResponse.status === 200) {
-                let response = await rawResponse.json();
-                store.dispatch(setApiStatus(apiConstants.STATUSES.OK));
-                store.dispatch(setSynonymizedText(response.synonymized));
-                store.dispatch(setOpen(false));
+                if (rawResponse.status === 200) {
+                    let response = await rawResponse.json();
+                    store.dispatch(setApiStatus(apiConstants.STATUSES.OK));
+                    store.dispatch(setSynonymizedText(response.synonymized));
+                    store.dispatch(setOpen(false));
+                }
             }
+        } catch (e) {
+            console.log(e);
+            store.dispatch(setApiStatus(apiConstants.STATUSES.ERROR));
+            store.dispatch(setMessage(apiConstants.MESSAGES.ERROR));
         }
+
     }
 
     async _addNewWords() {

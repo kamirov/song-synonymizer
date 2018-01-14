@@ -18,7 +18,7 @@ export default {
             "Synonymizing...wait no...",
             "Synonymizing...ok I'm sure it's there...",
         ],
-        ERROR: "Sorry, something went wrong on our end. Please try again (or send me an angry message).",
-        LIMIT: "Sorry, app is tired. Please try again tomorrow (daily external API limit exceeded. I ain't paying for their premium version)"
+        ERROR: "Sorry, something went wrong on our end. Please try again (or send Andrei an angry message).",
+        LIMIT: "Sorry, done for the day. Please try again tomorrow (daily external API limit exceeded. Andrei's not paying for the premium version. He mistreats me)"
     },
 }
