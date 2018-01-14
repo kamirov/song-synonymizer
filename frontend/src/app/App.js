@@ -4,6 +4,7 @@ import {Grid} from 'material-ui';
 import SidebarContainer from '../sidebar/SidebarContainer';
 import InputBoxContainer from '../synonymization/InputBoxContainer';
 import OutputBoxContainer from '../synonymization/OutputBoxContainer';
+import MessageContainer from "../message/MessageContainer";
 
 class App extends Component {
 
@@ -13,18 +14,17 @@ class App extends Component {
                 <Grid container spacing={24} justify="center">
                     <Grid item xs={12} sm={10}>
                         <Grid container>
-                            <Grid item xs={2}>
+                            <Grid item xs={12}>
                                 <SidebarContainer />
                             </Grid>
-                            <Grid item xs={5}>
+                            <Grid item xs={12}>
                                 <InputBoxContainer />
-                            </Grid>
-                            <Grid item xs={5}>
                                 <OutputBoxContainer />
                             </Grid>
                         </Grid>
                     </Grid>
                 </Grid>
+                <MessageContainer />
             </div>
         );
     }
