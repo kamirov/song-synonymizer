@@ -93,7 +93,7 @@ class WordService {
 
       // Words that tend to synonymize poorly
       // TODO: Should probably put these in a DB table
-      "need", "twenty", "do", "have",
+      "need", "twenty", "do", "have", "one", "two", "three"
 
       // Miscellaneous
       "m'am", "ma'am"
