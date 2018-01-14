@@ -61,9 +61,9 @@ const OutputBox = ({content, apiStatus, newWords, classes}) => {
             }
 
             return <Paper className={classes.paper} elevation={4}>
-                <Typography component="h1" type="headline" className={classes.headline}>
-                    Synonymized
-                </Typography>
+                {/*<Typography component="h1" type="headline" className={classes.headline}>*/}
+                    {/*Synonymized*/}
+                {/*</Typography>*/}
                 {contentContainer}
                 {paperFooter}
             </Paper>

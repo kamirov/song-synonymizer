@@ -26,11 +26,12 @@ class InputBox extends React.Component {
     render() {
         return <TextField
             id="input"
-            label="Type the lyrics to a song/poem"
+            label="Tell me the lyrics to a song/poem"
             value={this.state.value}
             onChange={this.handleChange}
             multiline={true}
             fullWidth={true}
+            disabled={this.props.disabled}
             className={this.props.classes.textField}
         />
     }
@@ -38,7 +39,8 @@ class InputBox extends React.Component {
 
 InputBox.propTypes = {
     content: PropTypes.string.isRequired,
-    onChange: PropTypes.func.isRequired
+    onChange: PropTypes.func.isRequired,
+    disabled: PropTypes.bool.isRequired
 }
 
 export default withStyles(styles)(InputBox);
