@@ -5,26 +5,30 @@ import SidebarContainer from '../sidebar/SidebarContainer';
 import InputBoxContainer from '../synonymization/InputBoxContainer';
 import OutputBoxContainer from '../synonymization/OutputBoxContainer';
 import MessageContainer from "../message/MessageContainer";
+import HeaderBar from "./HeaderBar";
 
 class App extends Component {
 
     render() {
         return (
             <div>
-                <Grid container spacing={24}>
-                    <Grid item xs={12} >
-                        <Grid container>
-                            <Grid item xs={12} sm={4} md={3} justify={"flex-end"}>
-                                <SidebarContainer />
-                            </Grid>
-                            <Grid item xs={12} sm={8} md={6} lg={5}>
-                                <InputBoxContainer />
-                                <OutputBoxContainer />
+                <HeaderBar/>
+                <div className={'main'}>
+                    <Grid container spacing={24}>
+                        <Grid item xs={12} >
+                            <Grid container>
+                                <Grid item xs={12} sm={4} md={3} lg={2} xl={1}>
+                                    <SidebarContainer />
+                                </Grid>
+                                <Grid item xs={12} sm={8} md={6} lg={5} xl={3}>
+                                    <InputBoxContainer />
+                                    <OutputBoxContainer />
+                                </Grid>
                             </Grid>
                         </Grid>
                     </Grid>
-                </Grid>
-                <MessageContainer />
+                    <MessageContainer />
+                </div>
             </div>
         );
     }

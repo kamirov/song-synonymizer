@@ -14,7 +14,7 @@ const flagDetails = {
     preserveLineSyllableCount: {
         label: "Preserve line syllables",
         disabled: true,
-        tooltip: "Currently disabled."
+        tooltip: "Currently disabled. Need to do some more tinkering with this one."
     },
     preserveLineRhyme: {
         label: "Preserve line rhyme",

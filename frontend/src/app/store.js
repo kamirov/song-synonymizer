@@ -1,7 +1,17 @@
 import {createStore} from 'redux'
 import RootReducer from './reducers';
 
-let store = createStore(RootReducer);
+let initialState = {
+    api: {
+        status: 'ok'
+    },
+    newWords: ['a', 'b', 'c'],
+    synonymization: {
+        synonymized: "nice"
+    }
+}
+
+let store = createStore(RootReducer, initialState);
 
 // Logging
 store.subscribe(() =>

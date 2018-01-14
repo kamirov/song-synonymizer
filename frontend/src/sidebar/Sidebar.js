@@ -18,7 +18,7 @@ const styles = theme => ({
 
 const Sidebar = ({classes, onSynonymize, disabled}) => {
     return <div>
-        <Grid container className={classes.sidebar}>
+        <Grid container className={classes.sidebar} justify={"flex-end"}>
             <Grid item xs={12}>
                 <FlagsListContainer disabled={disabled} />
             </Grid>
