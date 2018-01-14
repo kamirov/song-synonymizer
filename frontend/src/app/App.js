@@ -11,13 +11,13 @@ class App extends Component {
     render() {
         return (
             <div>
-                <Grid container spacing={24} justify="center">
-                    <Grid item xs={12} sm={10}>
+                <Grid container spacing={24}>
+                    <Grid item xs={12} >
                         <Grid container>
-                            <Grid item xs={12}>
+                            <Grid item xs={12} sm={4} md={3} justify={"flex-end"}>
                                 <SidebarContainer />
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid item xs={12} sm={8} md={6} lg={5}>
                                 <InputBoxContainer />
                                 <OutputBoxContainer />
                             </Grid>
