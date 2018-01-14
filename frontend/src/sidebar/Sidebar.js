@@ -16,14 +16,14 @@ const styles = theme => ({
     }
 });
 
-const Sidebar = ({classes, onSynonymize, disabled, synonymizeButtonText}) => {
+const Sidebar = ({classes, onSynonymize, disabled, onlyButtonDisabled, synonymizeButtonText}) => {
     return <div>
         <Grid container className={classes.sidebar} justify={"flex-end"}>
             <Grid item xs={12}>
                 <FlagsListContainer disabled={disabled} />
             </Grid>
             <Grid item xs={12}>
-                <Button raised disabled={disabled} color="accent" onClick={onSynonymize} className={classes.button}>
+                <Button raised disabled={disabled || onlyButtonDisabled} color="accent" onClick={onSynonymize} className={classes.button}>
                     {synonymizeButtonText}</Button>
             </Grid>
         </Grid>

@@ -17,6 +17,7 @@ const getSynonymizeButtonText = (apiStatus) => {
 const mapStateToProps = state => ({
     content: state.synonymization.original,
     disabled: state.api.status === apiConstants.STATUSES.FETCHING,
+    onlyButtonDisabled: !state.synonymization.original,
     synonymizeButtonText: getSynonymizeButtonText(state.api.status)
 })
 
