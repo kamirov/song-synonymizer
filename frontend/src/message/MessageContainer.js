@@ -1,6 +1,5 @@
 import {connect} from 'react-redux'
 import Message from "./Message";
-import {setOpen} from "./messageActions";
 import apiConstants from "../api/apiConstants";
 
 const mapStateToProps = state => ({
@@ -12,7 +11,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
     onClick: (apiStatus) => {
         if (apiStatus !== apiConstants.STATUSES.FETCHING) {
-            dispatch(setOpen(false))
+            // dispatch(setOpen(false))
         }
     }
 })
