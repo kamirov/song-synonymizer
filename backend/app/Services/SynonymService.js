@@ -115,8 +115,8 @@ class SynonymService {
       return replacements.join(' ');
     });
 
-    return await Promise.all(linesPromises);
-    // return (await Promise.all(linesPromises)).join('\n');
+    // return await Promise.all(linesPromises);
+    return (await Promise.all(linesPromises)).join('\n');
   }
 
   _correctArticles(replacements) {
