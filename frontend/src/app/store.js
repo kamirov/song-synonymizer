@@ -11,8 +11,8 @@ let initialState = {
 let store = createStore(RootReducer, initialState);
 
 // Logging
-store.subscribe(() =>
-    console.log('New State: ', store.getState())
-);
+// store.subscribe(() =>
+//     console.log('New State: ', store.getState())
+// );
 
 export default store;
