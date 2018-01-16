@@ -52,6 +52,10 @@ class SynonymService {
     return 1;
   }
 
+  static get MIN_LETTER_COUNT_TO_SYNONYMIZE() {
+    return 3;
+  }
+
   constructor() {
     this._wordService = new WordService();
     this._flags = SynonymService.DEFAULT_FLAGS;
@@ -85,7 +89,8 @@ class SynonymService {
         // console.log(token, sanitizedToken, tokenState);
 
         // TODO: Don't like this repetition
-        if (this._wordService.isIgnoredWord(sanitizedToken)) {
+        if (this._wordService.isIgnoredWord(sanitizedToken)
+            || sanitizedToken.length < SynonymService.MIN_LETTER_COUNT_TO_SYNONYMIZE) {
           let word = Object.assign({}, SynonymService.DISQUALIFIED_WORD, {
             name: token
           });
@@ -270,7 +275,6 @@ class SynonymService {
   _isPunctuation(string) {
     return string.replace(/[.,\/#!$%\^&\*\?;:{}=\-_`~()\d]/g, '').length === 0;
   }
-
 
   _splitTextIntoLines(text) {
     return text.split('\n');
