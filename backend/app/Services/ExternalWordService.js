@@ -23,6 +23,7 @@ class ExternalWordService {
 
   // See https://www.wordsapi.com/pricing
   static get DAILY_API_CALLS_LIMIT() { return 2000 }
+  static get DAY_IN_MILLISECONDS() { return 1000 * 60 * 60 * 24 }
 
   static get API_ROOT() { return 'https://wordsapiv1.p.mashape.com/words/' }
 
@@ -139,7 +140,7 @@ class ExternalWordService {
         'remainingApiCallsCount',
         remainingApiCallsCount-1,
         'EX',
-        this._getTimeToMidnight());
+        ExternalWordService.DAY_IN_MILLISECONDS);
 
     } else if (remainingApiCallsCount === 0) {
       throw Error("Exceeded daily Words API limit");
@@ -149,7 +150,7 @@ class ExternalWordService {
         'remainingApiCallsCount',
         ExternalWordService.DAILY_API_CALLS_LIMIT,
         'EX',
-        this._getTimeToMidnight());
+        ExternalWordService.DAY_IN_MILLISECONDS);
     }
 
     let remainingCallsCount = await Redis.get('remainingApiCallsCount');
