@@ -103,6 +103,9 @@ class WordStorageService {
 
     for (let synonymName of synonymNames) {
     // synonymNames.forEach(async synonymName => {
+      if (synonymName.includes('/')) {
+        continue;
+      }
       let synonym = await Word.findBy('name', synonymName);
       if (!synonym) {
         synonym = await this._addNewWord(synonymName);
