@@ -22,7 +22,7 @@ class ExternalWordService {
   }
 
   // See https://www.wordsapi.com/pricing
-  static get DAILY_API_CALLS_LIMIT() { return 2000 }
+  static get DAILY_API_CALLS_LIMIT() { return 2500 }
   static get DAY_IN_MILLISECONDS() { return 1000 * 60 * 60 * 24 }
 
   static get API_ROOT() { return 'https://wordsapiv1.p.mashape.com/words/' }
