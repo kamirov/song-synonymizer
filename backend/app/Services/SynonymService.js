@@ -53,7 +53,7 @@ class SynonymService {
   }
 
   static get MIN_LETTER_COUNT_TO_SYNONYMIZE() {
-    return 3;
+    return 4;
   }
 
   constructor() {
