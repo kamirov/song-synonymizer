@@ -58,7 +58,7 @@ class SynonymService {
   }
 
   static get MIN_LETTER_COUNT_TO_SYNONYMIZE() {
-    return 4;
+    return 3;
   }
 
   constructor() {
@@ -79,9 +79,9 @@ class SynonymService {
    */
   async processText(text) {
     // Tokenize, normalize, invalidate
-    let tokens = this._tokenize(text);
-    let normalizedTokens = this._normalize(tokens);
-    let tokensWithValidation = this._markInvalidated(normalizedTokens);
+    let tokens = this._createValidatedTokens(text);
+
+    return tokens;
 
     // Fetch, Tag, Relate
     let terms = await this._getTerms(tokensWithValidation, true);
@@ -99,11 +99,80 @@ class SynonymService {
     return synonymizedText;
   }
 
-  _tokenize(text) {
-    return line.out('terms');
+  /**
+   * Tokenizes, normalizes, and validates
+   * @param text
+   * @returns {}[]
+   * @private
+   */
+  _createValidatedTokens(text) {
+
+    // Normalize and sanitize
+    let tokens = nlp(text).out('terms').map(token => {
+
+      // Get token affixes
+      let prefix = token.text.match(/^\W+/);
+      let suffix = token.text.match(/\W+$/);
+
+      // Sometimes affixes don't get stripped in the library's normalization, so manually do it here
+      let normalizedTerm = token.normal;
+      if (token.normal.endsWith(suffix)) {
+        normalizedTerm = normalizedTerm.substring(0, normalizedTerm.lastIndexOf(suffix));
+      }
+      if (token.normal.startsWith(prefix)) {
+        normalizedTerm = normalizedTerm.substring(prefix.length);
+      }
+
+      // Get likely part of speech (assume it's the first common POS in the tags list)
+      const mainPartsOfSpeech = ['Noun', 'Verb', 'Adverb', 'Preposition', 'Conjunction'];
+      let partOfSpeech = token.tags[0].toLowerCase();
+      for (let i = 0; i < token.tags.length; i++) {
+        if (mainPartsOfSpeech.includes(token.tags[i])) {
+          partOfSpeech = token.tags[i].toLowerCase();
+          break;
+        }
+      }
+
+      return {
+        term: normalizedTerm,
+        partOfSpeech: partOfSpeech,
+        state: {
+          prefix: prefix ? prefix[0] : null,
+          suffix: suffix ? suffix[0] : null,
+          tags: [...token.tags]
+        },
+        // debug: token
+      }
+
+    });
+
+    let tokensWithValidation = this._markupIgnoredTokens(tokens);
+
+    return tokensWithValidation;
   }
 
 
+  _markupIgnoredTokens(tokens) {
+    return tokens.map(token => {
+      return {
+        ...token,
+        ignored: this._shouldIgnoreToken(token.term, token.state.tags)
+      }
+    })
+  }
+
+
+  _shouldIgnoreToken(term, tags) {
+    const ignoredTags = ['Determiner', 'Pronoun', 'Contraction', 'Conjunction', 'Copula', 'Modal'];
+
+    if (tags.filter(tag => ignoredTags.includes(tag)).length
+        || this._wordService.isIgnoredWord(term)
+        || term.length < SynonymService.MIN_LETTER_COUNT_TO_SYNONYMIZE) {
+      return true;
+    }
+
+    return false;
+  }
 
 
   // BELOW POTENTIALLY DEPRECATED
