@@ -108,7 +108,8 @@ class SynonymService {
   _createValidatedTokens(text) {
 
     // Normalize and sanitize
-    let tokens = nlp(text).out('terms').map(token => {
+    let tokens = nlp(text).out('terms')
+    .map(token => {
 
       // Get token affixes
       let prefix = token.text.match(/^\W+/);
@@ -131,6 +132,12 @@ class SynonymService {
           partOfSpeech = token.tags[i].toLowerCase();
           break;
         }
+      }
+
+      // Conjugate verb to infinitive (but keep tags)
+      if (token.tags.includes('Verb')) {
+        // TODO: I feel like there's a cleaner way to do this using the original nlp instance
+        normalizedTerm = nlp(normalizedTerm).verbs().toInfinitive().out('text');
       }
 
       return {
@@ -156,6 +163,7 @@ class SynonymService {
     return tokens.map(token => {
       return {
         ...token,
+
         ignored: this._shouldIgnoreToken(token.term, token.state.tags)
       }
     })
@@ -163,7 +171,8 @@ class SynonymService {
 
 
   _shouldIgnoreToken(term, tags) {
-    const ignoredTags = ['Determiner', 'Pronoun', 'Contraction', 'Conjunction', 'Copula', 'Modal'];
+    // TODO: Move to const
+    const ignoredTags = ['Determiner', 'Pronoun', 'Contraction', 'Conjunction', 'Copula', 'Modal', 'Auxiliary'];
 
     if (tags.filter(tag => ignoredTags.includes(tag)).length
         || this._wordService.isIgnoredWord(term)
