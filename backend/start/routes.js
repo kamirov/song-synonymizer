@@ -18,6 +18,4 @@ const Route = use('Route')
 Route.get('terms/:name', 'TermsController.show');
 Route.post('/terms/add-new', 'TermsController.parseAndAddNew')
 
-Route.resource('synonymizations', 'SynonymizationsController').apiOnly();
-
 Route.post('/synonymize', 'SynonymsController.synonymize')
