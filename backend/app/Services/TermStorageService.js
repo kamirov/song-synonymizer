@@ -14,14 +14,14 @@ class TermStorageService {
 
 
   constructor() {
-    this._wordService = new TermService;
+    this._termService = new TermService;
     this.externalTermService = new ExternalTermService;
     this.newTerms = [];
   }
 
 
   async addNewTerms(text) {
-    let tokens = this._wordService.createNormalizedTokens(text);
+    let tokens = this._termService.createNormalizedTokens(text);
 
     let potentialNewTerms = tokens
     .filter(token => token.term)
@@ -30,9 +30,8 @@ class TermStorageService {
       partOfSpeech: token.partOfSpeech
     }));
 
-    return potentialNewTerms;
-    for (let name of words) {
-      await this._addNewTermWithSynonyms(name);
+    for (let name of terms) {
+      await this._addNewTermWithRelations(name);
     }
 
     return this.newTerms;
@@ -40,74 +39,74 @@ class TermStorageService {
 
 
   /**
-   * Parses individual words in a block of text. Depluralizes, removes duplicates, and unusable words
+   * Parses individual terms in a block of text. Depluralizes, removes duplicates, and unusable terms
    * @param text
    * @returns {string[]}
    */
   splitIntoUsableTerms(text) {
-    let words;
+    let terms;
 
     // Lowercase
     text = text.toLowerCase();
 
     // Remove punctuation and split by space or new line
-    words = text.replace(TermService.PUNCTUATION_REGEX, '').split(/[ \n]/);
+    terms = text.replace(TermService.PUNCTUATION_REGEX, '').split(/[ \n]/);
 
     // Depluralize
-    words = words.map((word) => {
-      return pluralize.singular(word);
+    terms = terms.map((term) => {
+      return pluralize.singular(term);
     });
 
     // Remove duplicates
-    words = [...new Set(words)];
+    terms = [...new Set(terms)];
 
     // Remove empty entries
-    words = words.filter(word => word)
+    terms = terms.filter(term => term)
 
-    // Remove words with non-ascii characters
+    // Remove terms with non-ascii characters
     // TODO: Should we really remove these?
-    words = words.filter(word => !word.match(/[^\x00-\x7F]/g));
+    terms = terms.filter(term => !term.match(/[^\x00-\x7F]/g));
 
     // Uncontract
-    words = words.map(word => this._wordService.uncontract(word).word);
+    terms = terms.map(term => this._termService.uncontract(term).term);
 
-    // Remove ignored words
-    words = words.filter(word => !TermService.IGNORED_WORDS.includes(word));
+    // Remove ignored terms
+    terms = terms.filter(term => !TermService.IGNORED_TERMS.includes(term));
 
-    Logger.info('Parsed words: ' + words);
+    Logger.info('Parsed terms: ' + terms);
 
-    return words;
+    return terms;
   }
 
   // Private methods
 
-  async _addNewTermWithSynonyms(name) {
-    let word = await Term.findBy('name', name);
+  async _addNewTermWithRelations(name) {
+    let term = await Term.findBy('name', name);
 
-    if (!word) {
-      word = await this._addNewTerm(name);
+    if (!term) {
+      term = await this._addNewTerm(name);
     }
 
-    // if (!word.hasCheckedSynonyms) {
-    //   await this._recursivelyAddSynonyms(word);
+    // if (!term.hasCheckedSynonyms) {
+    //   await this._recursivelyAddSynonyms(term);
     // }
   }
 
   async _addNewTerm(name) {
     return;
-    let wordParams = await this.externalTermService.getSummary(name);
-    if (!wordParams) {
-      wordParams = TermService.EMPTY_WORD_PARAMS;
-      wordParams.name = name;
+    let termParams = await this.externalTermService.getSummary(name);
+    if (!termParams) {
+      termParams = TermService.EMPTY_TERM_PARAMS;
+      termParams.name = name;
     }
 
     this.newTerms.push(name);
 
-    return await Term.create(wordParams);
+    return await Term.create(termParams);
   }
 
-  async _recursivelyAddSynonyms(word, currentDepth = 1) {
-    let synonymNames = await this.externalTermService.getSynonyms(word.name);
+  async _recursivelyAddSynonyms(term, currentDepth = 1) {
+    let synonymNames = await this.externalTermService.getSynonyms(term.name);
     Logger.info(synonymNames);
 
     for (let synonymName of synonymNames) {
@@ -120,16 +119,16 @@ class TermStorageService {
         synonym = await this._addNewTerm(synonymName);
 
         // if (currentDepth < TermStorageService.MAX_SYNONYM_DEPTH) {
-        //   this._recursivelyAddSynonyms(word, currentDepth+1);
+        //   this._recursivelyAddSynonyms(term, currentDepth+1);
         // }
       }
 
       // TODO: Really don't like that this is done for each synonym. Should do this as a bulk operation
-      await word.synonyms().attach(synonym.id);
+      await term.synonyms().attach(synonym.id);
     }
 
-    word.hasCheckedSynonyms = true;
-    await word.save();
+    term.hasCheckedSynonyms = true;
+    await term.save();
 
   }
 
