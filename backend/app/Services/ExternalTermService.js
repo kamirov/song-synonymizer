@@ -6,18 +6,18 @@ const Redis = use('Redis')
 const Env = use('Env');
 const Logger = use('Logger');
 
-const WordService = use('App/Services/WordService');
+const TermService = use('App/Services/TermService');
 
 /**
  * Words API wrapper service
  */
-class ExternalWordService {
+class ExternalTermService {
 
   // API Constants
   static get API_ENDPOINTS() {
     return {
-      summary: ExternalWordService.API_ROOT + ':word',
-      synonyms: ExternalWordService.API_ROOT + ':word/synonyms'
+      summary: ExternalTermService.API_ROOT + ':word',
+      synonyms: ExternalTermService.API_ROOT + ':word/synonyms'
     }
   }
 
@@ -37,12 +37,12 @@ class ExternalWordService {
   static get REQUEST_GET_CONFIG() {
     return {
       method: 'get',
-      headers: ExternalWordService.REQUEST_HEADERS
+      headers: ExternalTermService.REQUEST_HEADERS
     }
   }
 
   constructor() {
-    this.wordService = new WordService;
+    this._termService = new TermService;
   }
 
   /**
@@ -52,8 +52,8 @@ class ExternalWordService {
    */
   async getSummary(name) {
     let response = await this._fetch(
-      ExternalWordService.API_ENDPOINTS.summary.replace(':word', name),
-      ExternalWordService.REQUEST_GET_CONFIG);
+      ExternalTermService.API_ENDPOINTS.summary.replace(':word', name),
+      ExternalTermService.REQUEST_GET_CONFIG);
 
     return this._parseSummary(await response.json());
   }
@@ -68,8 +68,8 @@ class ExternalWordService {
   async getSynonyms(word) {
 
     let response = await this._fetch(
-      ExternalWordService.API_ENDPOINTS.synonyms.replace(':word', word),
-      ExternalWordService.REQUEST_GET_CONFIG);
+      ExternalTermService.API_ENDPOINTS.synonyms.replace(':word', word),
+      ExternalTermService.REQUEST_GET_CONFIG);
 
     return this._parseSynonyms(await response.json())
   }
@@ -100,7 +100,7 @@ class ExternalWordService {
 
     if (summaryResponse.pronunciation) {
       let ipa = summaryResponse.pronunciation.all || summaryResponse.pronunciation;
-      summary.ultima = this.wordService.getUltima(ipa);
+      summary.ultima = this._termService.getUltima(ipa);
     }
 
     return summary;
@@ -140,7 +140,7 @@ class ExternalWordService {
         'remainingApiCallsCount',
         remainingApiCallsCount-1,
         'EX',
-        ExternalWordService.DAY_IN_MILLISECONDS);
+        ExternalTermService.DAY_IN_MILLISECONDS);
 
     } else if (remainingApiCallsCount === 0) {
       throw Error("Exceeded daily Words API limit");
@@ -148,9 +148,9 @@ class ExternalWordService {
     } else {
       await Redis.set(
         'remainingApiCallsCount',
-        ExternalWordService.DAILY_API_CALLS_LIMIT,
+        ExternalTermService.DAILY_API_CALLS_LIMIT,
         'EX',
-        ExternalWordService.DAY_IN_MILLISECONDS);
+        ExternalTermService.DAY_IN_MILLISECONDS);
     }
 
     let remainingCallsCount = await Redis.get('remainingApiCallsCount');
@@ -173,4 +173,4 @@ class ExternalWordService {
 
 }
 
-module.exports = ExternalWordService;
+module.exports = ExternalTermService;

@@ -1,25 +1,20 @@
 'use strict'
 
 const pluralize = require('pluralize');
-const nlp = require('compromise');
-const natural = require('natural');
-var wordnet = new natural.WordNet();
-
-// const tokenizer = new natural.TreebankWordTokenizer();
 
 const Logger = use('Logger');
 const Database = use('Database');
 
-const WordService = use('App/Services/WordService');
-const Word = use('App/Models/Word');
+const TermService = use('App/Services/TermService');
+const Term = use('App/Models/Term');
 
 class SynonymService {
 
   static get DEFAULT_FLAGS() {
     return {
-      preserveWordSyllableCount: false,
+      preserveTermSyllableCount: false,
       preserveLineSyllableCount: false,
-      preserveWordRhyme: false,
+      preserveTermRhyme: false,
       preserveLineRhyme: false,
       preservePronouns: true,
       preserveArticles: true,
@@ -38,7 +33,7 @@ class SynonymService {
       preservePrepositions: 'isPreposition'
     };
   }
-  static get DISQUALIFIED_WORD() {
+  static get DISQUALIFIED_TERM() {
     return {
       isDisqualified: true
     }
@@ -53,7 +48,7 @@ class SynonymService {
     }
   }
   static get ASSUMED_SYLLABLE_COUNT() {
-    // This gets most cases where a word from the original text had an unknown syllable count
+    // This gets most cases where a term from the original text had an unknown syllable count
     return 1;
   }
 
@@ -62,7 +57,7 @@ class SynonymService {
   }
 
   constructor() {
-    this._wordService = new WordService();
+    this._termService = new TermService();
     this._flags = SynonymService.DEFAULT_FLAGS;
   }
 
@@ -79,15 +74,18 @@ class SynonymService {
    */
   async processText(text) {
     // Tokenize, normalize, invalidate
-    let tokens = this._createValidatedTokens(text);
+    let tokens = this._termService.createNormalizedTokens(text);
+    let tokensWithValidation = this._markupIgnoredTokens(tokens);
 
-    return tokens;
+    return tokensWithValidation;
 
     // Fetch, Tag, Relate
-    let terms = await this._getTerms(tokensWithValidation, true);
+    await this._getTermsOrFetch(tokens);
+
+    return tokensWithRelations;
 
     // Synonymize
-    let synonymizedTokens = await this._synonymize(terms);
+    let synonymizedTokens = await this._synonymize(tokensWithRelations);
 
     // Denormalize
     let tokenStates = tokensWithValidation.map(token => token.state);
@@ -100,88 +98,54 @@ class SynonymService {
   }
 
   /**
-   * Tokenizes, normalizes, and validates
-   * @param text
-   * @returns {}[]
+   * @param tokens
    * @private
    */
-  _createValidatedTokens(text) {
+  _getTermsOrFetch(tokens) {
 
-    // Normalize and sanitize
-    let tokens = nlp(text).out('terms')
-    .map(token => {
 
-      // Get token affixes
-      let prefix = token.text.match(/^\W+/);
-      let suffix = token.text.match(/\W+$/);
 
-      // Sometimes affixes don't get stripped in the library's normalization, so manually do it here
-      let normalizedTerm = token.normal;
-      if (token.normal.endsWith(suffix)) {
-        normalizedTerm = normalizedTerm.substring(0, normalizedTerm.lastIndexOf(suffix));
-      }
-      if (token.normal.startsWith(prefix)) {
-        normalizedTerm = normalizedTerm.substring(prefix.length);
-      }
+    return tokens;
 
-      // Get likely part of speech (assume it's the first common POS in the tags list)
-      const mainPartsOfSpeech = ['Noun', 'Verb', 'Adverb', 'Preposition', 'Conjunction'];
-      let partOfSpeech = token.tags[0].toLowerCase();
-      for (let i = 0; i < token.tags.length; i++) {
-        if (mainPartsOfSpeech.includes(token.tags[i])) {
-          partOfSpeech = token.tags[i].toLowerCase();
-          break;
-        }
-      }
-
-      // Conjugate verb to infinitive (but keep tags)
-      if (token.tags.includes('Verb')) {
-        // TODO: I feel like there's a cleaner way to do this using the original nlp instance
-        normalizedTerm = nlp(normalizedTerm).verbs().toInfinitive().out('text');
-      }
-
-      return {
-        term: normalizedTerm,
-        partOfSpeech: partOfSpeech,
-        state: {
-          prefix: prefix ? prefix[0] : null,
-          suffix: suffix ? suffix[0] : null,
-          tags: [...token.tags]
-        },
-        // debug: token
-      }
-
-    });
-
-    let tokensWithValidation = this._markupIgnoredTokens(tokens);
-
-    return tokensWithValidation;
   }
 
-
+  /**
+   * Adds ignored tag to tokens
+   * @param tokens
+   * @private
+   */
   _markupIgnoredTokens(tokens) {
+    console.log(tokens)
     return tokens.map(token => {
       return {
         ...token,
-
         ignored: this._shouldIgnoreToken(token.term, token.state.tags)
       }
     })
   }
 
 
+  /**
+   * Returns true if token is ignorable
+   * @param term
+   * @param tags
+   * @returns {boolean}
+   * @private
+   */
   _shouldIgnoreToken(term, tags) {
     // TODO: Move to const
-    const ignoredTags = ['Determiner', 'Pronoun', 'Contraction', 'Conjunction', 'Copula', 'Modal', 'Auxiliary'];
+    const ignoredTags = ['Determiner', 'Pronoun', 'Contraction', 'Conjunction', 'Copula', 'Modal', 'Auxiliary', 'Negative'];
 
     if (tags.filter(tag => ignoredTags.includes(tag)).length
-        || this._wordService.isIgnoredWord(term)
+        || this._termService.isIgnoredTerm(term)
         || term.length < SynonymService.MIN_LETTER_COUNT_TO_SYNONYMIZE) {
       return true;
     }
 
     return false;
   }
+
+
 
 
   // BELOW POTENTIALLY DEPRECATED
@@ -194,12 +158,12 @@ class SynonymService {
       let tokenStates = [];
       let synonymPromises = tokens.map(async (token, tokenIdx) => {
         if (this._isPunctuation(token)) {
-          let word = Object.assign({}, SynonymService.DISQUALIFIED_WORD, {
+          let term = Object.assign({}, SynonymService.DISQUALIFIED_TERM, {
             name: token
           });
 
           tokenStates.push(SynonymService.DEFAULT_TOKEN_STATE);
-          return word;
+          return term;
         }
 
         let {sanitizedToken, tokenState} = this._sanitizeToken(token);
@@ -207,29 +171,29 @@ class SynonymService {
         console.log(token, sanitizedToken, tokenState);
 
         // TODO: Don't like this repetition
-        if (this._wordService.isIgnoredWord(sanitizedToken)
+        if (this._termService.isIgnoredTerm(sanitizedToken)
             || sanitizedToken.length < SynonymService.MIN_LETTER_COUNT_TO_SYNONYMIZE) {
-          let word = Object.assign({}, SynonymService.DISQUALIFIED_WORD, {
+          let term = Object.assign({}, SynonymService.DISQUALIFIED_TERM, {
             name: token
           });
 
           tokenStates.push(SynonymService.DEFAULT_TOKEN_STATE);
-          return word;
+          return term;
         }
 
         tokenStates.push(tokenState);
 
-        let isLastWord = tokenIdx === (tokens.length-1)
+        let isLastTerm = tokenIdx === (tokens.length-1)
 
-        let word = await this._getWordAndSynonyms(sanitizedToken, isLastWord);
+        let term = await this._getTermAndSynonyms(sanitizedToken, isLastTerm);
         // console.log(sanitizedToken, tokenStates);
-        return word;
+        return term;
       });
 
-      let wordsWithSynonyms = await Promise.all(synonymPromises);
-      let unmodifiedReplacements = await this._replaceWordsWithSynonyms(wordsWithSynonyms);
+      let termsWithSynonyms = await Promise.all(synonymPromises);
+      let unmodifiedReplacements = await this._replaceTermsWithSynonyms(termsWithSynonyms);
       // return unmodifiedReplacements;
-      let replacements = this._applyOriginalTokenStateToWords(unmodifiedReplacements, tokenStates);
+      let replacements = this._applyOriginalTokenStateToTerms(unmodifiedReplacements, tokenStates);
       this._correctArticles(replacements);
 
       // return replacements;
@@ -243,80 +207,80 @@ class SynonymService {
 
   _correctArticles(replacements) {
     for (let i = 0; i < replacements.length-1; i++) {
-      let nextWordStartsWithVowel = this._wordService.isVowel(replacements[i+1].charAt(0));
-      if (replacements[i] === 'a' && nextWordStartsWithVowel) {
+      let nextTermStartsWithVowel = this._termService.isVowel(replacements[i+1].charAt(0));
+      if (replacements[i] === 'a' && nextTermStartsWithVowel) {
         replacements[i] = 'an';
-      } else if (replacements[i] === 'an' && !nextWordStartsWithVowel) {
+      } else if (replacements[i] === 'an' && !nextTermStartsWithVowel) {
         replacements[i] = 'a';
       }
     }
   }
 
-  _applyOriginalTokenStateToWords(unmodifiedReplacements, tokenStates) {
-    return unmodifiedReplacements.map((wordName, idx) => {
+  _applyOriginalTokenStateToTerms(unmodifiedReplacements, tokenStates) {
+    return unmodifiedReplacements.map((termName, idx) => {
       let tokenState = tokenStates[idx];
 
       if (tokenState.plural) {
-        wordName = pluralize.plural(wordName);
+        termName = pluralize.plural(termName);
       }
 
       if (tokenState.contraction) {
-        wordName = wordName + tokenState.contraction;
+        termName = termName + tokenState.contraction;
       }
 
       if (tokenState.capitalized) {
-        wordName = wordName.charAt(0).toUpperCase() + wordName.slice(1);
+        termName = termName.charAt(0).toUpperCase() + termName.slice(1);
       }
 
       if (tokenState.punctuationBefore) {
-        wordName = tokenState.punctuationBefore + wordName;
+        termName = tokenState.punctuationBefore + termName;
       }
 
       if (tokenState.punctuationAfter) {
-        wordName = wordName + tokenState.punctuationAfter;
+        termName = termName + tokenState.punctuationAfter;
       }
 
-      return wordName;
+      return termName;
     })
   }
 
 
-  async _replaceWordsWithSynonyms(wordsWithSynonyms) {
+  async _replaceTermsWithSynonyms(termsWithSynonyms) {
 
-    // return wordsWithSynonyms;
+    // return termsWithSynonyms;
 
     let replacements;
     if (this._flags.preserveLineSyllableCount) {
       // TODO: Fill this in
       // Hard mode
-      // let originalSyllableCount = wordsWithSynonyms.reduce((runningCount, word) => {
-      //   if (!word.name || this._isPunctuation(word.name)) {
+      // let originalSyllableCount = termsWithSynonyms.reduce((runningCount, term) => {
+      //   if (!term.name || this._isPunctuation(term.name)) {
       //     return runningCount
       //   } else {
-      //     return runningCount + (word.syllablesCount || SynonymService.ASSUMED_SYLLABLE_COUNT)
+      //     return runningCount + (term.syllablesCount || SynonymService.ASSUMED_SYLLABLE_COUNT)
       //   }
       // }, 0);
       //
       // console.log('originalSyllableCount', originalSyllableCount);
 
-      replacements = wordsWithSynonyms.map(word => word.name)
+      replacements = termsWithSynonyms.map(term => term.name)
     } else {
       // Easy mode
-      replacements = wordsWithSynonyms.map(word => {
-        if (!word.isDisqualified) {
-          word = word.toJSON();
+      replacements = termsWithSynonyms.map(term => {
+        if (!term.isDisqualified) {
+          term = term.toJSON();
         }
-        if (word.synonyms && word.synonyms.length) {
-          let options = word.synonyms.slice();
-          options.push({ name: word.name });
+        if (term.synonyms && term.synonyms.length) {
+          let options = term.synonyms.slice();
+          options.push({ name: term.name });
           return this._getRandomArrayElement(options).name;
         } else {
-          return word.name;
+          return term.name;
         }
       })
     }
 
-    // return wordsWithSynonyms;
+    // return termsWithSynonyms;
     return replacements
   }
 
@@ -327,46 +291,46 @@ class SynonymService {
   }
 
 
-  async _getWordAndSynonyms(token, isLastWord) {
+  async _getTermAndSynonyms(token, isLastTerm) {
 
-    let wordQuery = Word
+    let termQuery = Term
       .query()
       .where('name', token)
 
-    if (!this._isWordExcludedByClass(token)) {
+    if (!this._isTermExcludedByClass(token)) {
       let synonymFilter = builder => {
-        if (this._flags.preserveWordSyllableCount
-          || (this._flags.preserveLineSyllableCount && isLastWord)) {
+        if (this._flags.preserveTermSyllableCount
+          || (this._flags.preserveLineSyllableCount && isLastTerm)) {
           // TODO: Feels like there's a way to do this without a subquery
           let subquery = Database.select('syllablesCount')
-            .from('words')
+            .from('terms')
             .where('name', token);
 
           builder.where('syllablesCount', subquery)
         }
 
-        if (this._flags.preserveWordRhyme
-          || (this._flags.preserveLineRhyme && isLastWord)) {
+        if (this._flags.preserveTermRhyme
+          || (this._flags.preserveLineRhyme && isLastTerm)) {
           // TODO: Feels like there's a way to do this without a subquery
           let subquery = Database.select('ultima')
-            .from('words')
+            .from('terms')
             .where('name', token);
 
           builder.where('ultima', subquery)
         }
       };
 
-      wordQuery.with('synonyms', synonymFilter);
+      termQuery.with('synonyms', synonymFilter);
     }
 
-    return await wordQuery.first();
+    return await termQuery.first();
   }
 
 
   _sanitizeToken(token) {
 
-    let {word: uncontractedToken, contraction} = this._wordService.uncontract(token);
-    let depunctuatedToken = uncontractedToken.replace(WordService.PUNCTUATION_REGEX, '');
+    let {term: uncontractedToken, contraction} = this._termService.uncontract(token);
+    let depunctuatedToken = uncontractedToken.replace(TermService.PUNCTUATION_REGEX, '');
     let sanitizedToken = pluralize.singular(depunctuatedToken.toLowerCase());
 
     let tokenState = {
@@ -404,10 +368,10 @@ class SynonymService {
   }
 
 
-  _isWordExcludedByClass(word) {
+  _isTermExcludedByClass(term) {
     for (let flag in SynonymService.CLASS_FLAGS_AND_CHECKS) {
       let checkFunc = SynonymService.CLASS_FLAGS_AND_CHECKS[flag];
-      if (this._flags[flag] && this._wordService[checkFunc](word)) {
+      if (this._flags[flag] && this._termService[checkFunc](term)) {
         return true;
       }
     }

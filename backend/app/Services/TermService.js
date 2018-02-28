@@ -3,11 +3,13 @@
 const Logger = use('Logger');
 
 const pluralize = require('pluralize');
-const Word = use('App/Models/Word');
+const nlp = require('compromise');
 
-class WordService {
+const Term = use('App/Models/Term');
 
-  static get EMPTY_WORD_PARAMS() {
+class TermService {
+
+  static get EMPTY_TERM_PARAMS() {
     return {
       hasCheckedSynonyms: true,
       isEmpty: true
@@ -74,7 +76,7 @@ class WordService {
   }
 
   // TODO: This should probably be in SynonymService
-  static get IGNORED_WORDS() {
+  static get IGNORED_TERMS() {
     return [
       // Common contractions (mostly from https://en.wikipedia.org/wiki/Wikipedia:List_of_English_contractions)
       "ain't", "amn't", "aren't", "can't", "cain't", "'cause", "could've", "couldn't",
@@ -91,7 +93,7 @@ class WordService {
       "who'll", "who're", "who's", "who've", "why'd", "why're", "why's", "won't", "would've",
       "wouldn't", "y'all", "you'd", "you'll", "you're", "you've", "noun's",
 
-      // Words that tend to synonymize poorly
+      // Terms that tend to synonymize poorly
       // TODO: Should probably put these in a DB table
       "need", "twenty", "have", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
 
@@ -101,36 +103,36 @@ class WordService {
   }
 
   isVowel(letter) {
-    return WordService.VOWELS.includes(letter);
+    return TermService.VOWELS.includes(letter);
   }
 
 
-  isPronoun(word) {
-    return WordService.PRONOUNS.includes(word);
+  isPronoun(term) {
+    return TermService.PRONOUNS.includes(term);
   }
 
 
-  isConjunction(word) {
-    return WordService.CONJUNCTIONS.includes(word);
+  isConjunction(term) {
+    return TermService.CONJUNCTIONS.includes(term);
   }
 
 
-  isArticle(word) {
-    return WordService.ARTICLES.includes(word);
+  isArticle(term) {
+    return TermService.ARTICLES.includes(term);
   }
 
 
-  isPreposition(word) {
-    return WordService.PREPOSITIONS.includes(word);
+  isPreposition(term) {
+    return TermService.PREPOSITIONS.includes(term);
   }
 
-  isIgnoredWord(word) {
-    return WordService.IGNORED_WORDS.includes(word);
+  isIgnoredTerm(term) {
+    return TermService.IGNORED_TERMS.includes(term);
   }
 
 
-  async getWord(name) {
-    return await Word
+  async getTerm(name) {
+    return await Term
       .query()
       .where('name', name)
       .with('synonyms')
@@ -138,8 +140,57 @@ class WordService {
   }
 
 
+  createNormalizedTokens(text) {
+
+    return nlp(text).out('terms')
+    .map(token => {
+
+      // Get token affixes
+      let prefix = token.text.match(/^\W+/);
+      let suffix = token.text.match(/\W+$/);
+
+      // Sometimes affixes don't get stripped in the library's normalization, so manually do it here
+      let normalizedTerm = token.normal;
+      if (token.normal.endsWith(suffix)) {
+        normalizedTerm = normalizedTerm.substring(0, normalizedTerm.lastIndexOf(suffix));
+      }
+      if (token.normal.startsWith(prefix)) {
+        normalizedTerm = normalizedTerm.substring(prefix.length);
+      }
+
+      // Get likely part of speech (assume it's the first common POS in the tags list)
+      const mainPartsOfSpeech = ['Noun', 'Verb', 'Adverb', 'Preposition', 'Conjunction'];
+      let partOfSpeech = token.tags[0].toLowerCase();
+      for (let i = 0; i < token.tags.length; i++) {
+        if (mainPartsOfSpeech.includes(token.tags[i])) {
+          partOfSpeech = token.tags[i].toLowerCase();
+          break;
+        }
+      }
+
+      // Conjugate verb to infinitive (but keep tags)
+      if (token.tags.includes('Verb')) {
+        // TODO: I feel like there's a cleaner way to do this using the original nlp instance
+        normalizedTerm = nlp(normalizedTerm).verbs().toInfinitive().out('text');
+      }
+
+      return {
+        term: normalizedTerm,
+        partOfSpeech: partOfSpeech,
+        state: {
+          prefix: prefix ? prefix[0] : null,
+          suffix: suffix ? suffix[0] : null,
+          tags: [...token.tags]
+        },
+        // debug: token
+      }
+
+    });
+  }
+
+
   /**
-   * Gets ultima from an IPA representation of a word
+   * Gets ultima from an IPA representation of a term
    * (almost...this doesn't include the first 1-2 consonants of the ultima, so that might be a misnomer)
    *
    * @param {string} ipa
@@ -150,7 +201,7 @@ class WordService {
     let ultima = '';
     let encounteredVowel = false;
     for (let i = ipa.length-1; i >= 0; i--) {
-      if (WordService.IPA_VOWELS.includes(ipa.charAt(i))) {
+      if (TermService.IPA_VOWELS.includes(ipa.charAt(i))) {
         ultima = ipa.charAt(i) + ultima;
         encounteredVowel = true;
       } else if (encounteredVowel) {
@@ -164,18 +215,18 @@ class WordService {
   }
 
 
-  uncontract(word) {
+  uncontract(term) {
 
     let result = {
-      word: word,
+      term: term,
       contraction: null
     }
 
-    WordService.GENERAL_CONTRACTIONS.forEach(contraction => {
-      // TODO: We'll encounter a problem potentially with multiple contractions on one word
-      // TODO: Might have problems with words that have ' in the middle somewhere
-      if (word.slice(-contraction.length) === contraction) {
-        result.word = word.slice(0, -contraction.length)
+    TermService.GENERAL_CONTRACTIONS.forEach(contraction => {
+      // TODO: We'll encounter a problem potentially with multiple contractions on one term
+      // TODO: Might have problems with terms that have ' in the middle somewhere
+      if (term.slice(-contraction.length) === contraction) {
+        result.term = term.slice(0, -contraction.length)
         result.contraction = contraction;
       }
     });
@@ -185,4 +236,4 @@ class WordService {
 
 }
 
-module.exports = WordService;
+module.exports = TermService;

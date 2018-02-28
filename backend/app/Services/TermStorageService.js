@@ -4,29 +4,38 @@ const Logger = use('Logger');
 
 const pluralize = require('pluralize');
 
-const ExternalWordService = use('App/Services/ExternalWordService');
-const WordService = use('App/Services/WordService');
-const Word = use('App/Models/Word');
+const ExternalTermService = use('App/Services/ExternalTermService');
+const TermService = use('App/Services/TermService');
+const Term = use('App/Models/Term');
 
-class WordStorageService {
+class TermStorageService {
 
   static get MAX_SYNONYM_DEPTH() { return 1; }
 
 
   constructor() {
-    this.wordService = new WordService;
-    this.externalWordService = new ExternalWordService;
-    this.newWords = [];
+    this._wordService = new TermService;
+    this.externalTermService = new ExternalTermService;
+    this.newTerms = [];
   }
 
 
-  async addNewWords(text) {
-    let words = this.splitIntoUsableWords(text);
+  async addNewTerms(text) {
+    let tokens = this._wordService.createNormalizedTokens(text);
+
+    let potentialNewTerms = tokens
+    .filter(token => token.term)
+    .map(token => ({
+      term: token.term,
+      partOfSpeech: token.partOfSpeech
+    }));
+
+    return potentialNewTerms;
     for (let name of words) {
-      await this._addNewWordWithSynonyms(name);
+      await this._addNewTermWithSynonyms(name);
     }
 
-    return this.newWords;
+    return this.newTerms;
   }
 
 
@@ -35,14 +44,14 @@ class WordStorageService {
    * @param text
    * @returns {string[]}
    */
-  splitIntoUsableWords(text) {
+  splitIntoUsableTerms(text) {
     let words;
 
     // Lowercase
     text = text.toLowerCase();
 
     // Remove punctuation and split by space or new line
-    words = text.replace(WordService.PUNCTUATION_REGEX, '').split(/[ \n]/);
+    words = text.replace(TermService.PUNCTUATION_REGEX, '').split(/[ \n]/);
 
     // Depluralize
     words = words.map((word) => {
@@ -60,10 +69,10 @@ class WordStorageService {
     words = words.filter(word => !word.match(/[^\x00-\x7F]/g));
 
     // Uncontract
-    words = words.map(word => this.wordService.uncontract(word).word);
+    words = words.map(word => this._wordService.uncontract(word).word);
 
     // Remove ignored words
-    words = words.filter(word => !WordService.IGNORED_WORDS.includes(word));
+    words = words.filter(word => !TermService.IGNORED_WORDS.includes(word));
 
     Logger.info('Parsed words: ' + words);
 
@@ -72,33 +81,33 @@ class WordStorageService {
 
   // Private methods
 
-  async _addNewWordWithSynonyms(name) {
-
-    let word = await Word.findBy('name', name);
+  async _addNewTermWithSynonyms(name) {
+    let word = await Term.findBy('name', name);
 
     if (!word) {
-      word = await this._addNewWord(name);
+      word = await this._addNewTerm(name);
     }
 
-    if (!word.hasCheckedSynonyms) {
-      await this._recursivelyAddSynonyms(word);
-    }
+    // if (!word.hasCheckedSynonyms) {
+    //   await this._recursivelyAddSynonyms(word);
+    // }
   }
 
-  async _addNewWord(name) {
-    let wordParams = await this.externalWordService.getSummary(name);
+  async _addNewTerm(name) {
+    return;
+    let wordParams = await this.externalTermService.getSummary(name);
     if (!wordParams) {
-      wordParams = WordService.EMPTY_WORD_PARAMS;
+      wordParams = TermService.EMPTY_WORD_PARAMS;
       wordParams.name = name;
     }
 
-    this.newWords.push(name);
+    this.newTerms.push(name);
 
-    return await Word.create(wordParams);
+    return await Term.create(wordParams);
   }
 
   async _recursivelyAddSynonyms(word, currentDepth = 1) {
-    let synonymNames = await this.externalWordService.getSynonyms(word.name);
+    let synonymNames = await this.externalTermService.getSynonyms(word.name);
     Logger.info(synonymNames);
 
     for (let synonymName of synonymNames) {
@@ -106,11 +115,11 @@ class WordStorageService {
       if (synonymName.includes('/')) {
         continue;
       }
-      let synonym = await Word.findBy('name', synonymName);
+      let synonym = await Term.findBy('name', synonymName);
       if (!synonym) {
-        synonym = await this._addNewWord(synonymName);
+        synonym = await this._addNewTerm(synonymName);
 
-        // if (currentDepth < WordStorageService.MAX_SYNONYM_DEPTH) {
+        // if (currentDepth < TermStorageService.MAX_SYNONYM_DEPTH) {
         //   this._recursivelyAddSynonyms(word, currentDepth+1);
         // }
       }
@@ -126,4 +135,4 @@ class WordStorageService {
 
 }
 
-module.exports = WordStorageService;
+module.exports = TermStorageService;
