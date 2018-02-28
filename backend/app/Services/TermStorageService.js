@@ -24,14 +24,10 @@ class TermStorageService {
     let tokens = this._termService.createNormalizedTokens(text);
 
     let potentialNewTerms = tokens
-    .filter(token => token.term)
-    .map(token => ({
-      term: token.term,
-      partOfSpeech: token.partOfSpeech
-    }));
+    .filter(token => token.term);
 
-    for (let name of terms) {
-      await this._addNewTermWithRelations(name);
+    for (let term of potentialNewTerms) {
+      await this._addTermIfNewWithRelations(term.term);
     }
 
     return this.newTerms;
@@ -80,7 +76,7 @@ class TermStorageService {
 
   // Private methods
 
-  async _addNewTermWithRelations(name) {
+  async _addTermIfNewWithRelations(name) {
     let term = await Term.findBy('name', name);
 
     if (!term) {
@@ -93,8 +89,12 @@ class TermStorageService {
   }
 
   async _addNewTerm(name) {
-    return;
+    console.log(name);
     let termParams = await this.externalTermService.getSummary(name);
+
+    console.log(termParams);
+    return;
+
     if (!termParams) {
       termParams = TermService.EMPTY_TERM_PARAMS;
       termParams.name = name;

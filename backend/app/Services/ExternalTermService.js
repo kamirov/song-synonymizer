@@ -51,10 +51,12 @@ class ExternalTermService {
    * @returns {Promise<Object>}
    */
   async getSummary(name) {
+
     let response = await this._fetch(
       ExternalTermService.API_ENDPOINTS.summary.replace(':word', name),
       ExternalTermService.REQUEST_GET_CONFIG);
 
+    return;
     return this._parseSummary(await response.json());
   }
 
