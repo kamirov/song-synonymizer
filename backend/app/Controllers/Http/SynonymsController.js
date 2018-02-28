@@ -5,6 +5,7 @@ const Logger = use('Logger');
 const SynonymService = use('App/Services/SynonymService');
 const WordStorageService = use('App/Services/WordStorageService');
 
+
 class SynonymController {
   async synonymize({request}) {
     let text = request.post().text;
@@ -14,7 +15,8 @@ class SynonymController {
     let synonymService = new SynonymService;
 
     synonymService.setFlags(request.post().flags);
-    let synonymized = await synonymService.synonymize(request.post().text);
+    let synonymized = await synonymService.processText(request.post().text);
+    // let synonymized = await synonymService.synonymize(request.post().text);
 
     return { synonymized };
   }

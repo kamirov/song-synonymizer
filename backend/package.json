@@ -24,10 +24,13 @@
     "@adonisjs/framework": "^4.0.28",
     "@adonisjs/ignitor": "^1.0.14",
     "@adonisjs/lucid": "^4.0.24",
-    "@adonisjs/redis": "^2.0.3",
+    "@adonisjs/redis": "^2.0.4",
+    "compromise": "^11.5.2",
+    "natural": "^0.5.6",
     "node-fetch": "^1.7.3",
     "pg": "^7.4.0",
-    "pluralize": "^7.0.0"
+    "pluralize": "^7.0.0",
+    "wordnet-db": "^3.1.6"
   },
   "devDependencies": {},
   "autoload": {}

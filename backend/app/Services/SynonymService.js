@@ -1,6 +1,11 @@
 'use strict'
 
 const pluralize = require('pluralize');
+const nlp = require('compromise');
+const natural = require('natural');
+var wordnet = new natural.WordNet();
+
+// const tokenizer = new natural.TreebankWordTokenizer();
 
 const Logger = use('Logger');
 const Database = use('Database');
@@ -67,8 +72,43 @@ class SynonymService {
     this._flags = Object.assign({}, SynonymService.DEFAULT_FLAGS, flags);
   }
 
+  /**
+   * Main function
+   * @param text
+   * @returns {Promise<string>}
+   */
+  async processText(text) {
+    // Tokenize, normalize, invalidate
+    let tokens = this._tokenize(text);
+    let normalizedTokens = this._normalize(tokens);
+    let tokensWithValidation = this._markInvalidated(normalizedTokens);
 
-  async synonymize(text) {
+    // Fetch, Tag, Relate
+    let terms = await this._getTerms(tokensWithValidation, true);
+
+    // Synonymize
+    let synonymizedTokens = await this._synonymize(terms);
+
+    // Denormalize
+    let tokenStates = tokensWithValidation.map(token => token.state);
+    let denormalizedTokens = this._denormalize(synonymizedTokens, tokenStates);
+
+    // Detokenize
+    let synonymizedText = denormalizedTokens.map(token => token.name).join(' ');
+
+    return synonymizedText;
+  }
+
+  _tokenize(text) {
+    return line.out('terms');
+  }
+
+
+
+
+  // BELOW POTENTIALLY DEPRECATED
+
+  async osynonymize(text) {
     let lines = this._splitTextIntoLines(text);
     let linesPromises = lines.map(async line => {
       let tokens = this._splitLineIntoTokens(line);
@@ -86,7 +126,7 @@ class SynonymService {
 
         let {sanitizedToken, tokenState} = this._sanitizeToken(token);
 
-        // console.log(token, sanitizedToken, tokenState);
+        console.log(token, sanitizedToken, tokenState);
 
         // TODO: Don't like this repetition
         if (this._wordService.isIgnoredWord(sanitizedToken)

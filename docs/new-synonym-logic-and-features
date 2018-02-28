@@ -1,0 +1,44 @@
+Features
+    - Synonymization
+    - Tense changes
+
+
+Synonymization
+    - Tokenize
+    - Normalize
+        - Store state of each token
+        - Strip away token state
+    - Invalidate
+        - If token is invalid, set "ignore" to true on it
+        - Token invalidated based on heuristics
+    - Fetch
+        - Check if we have the word
+        - If we don't:
+            - Get array of {
+                term, partOfSpeech, syllablesCount, ultima, relationsQueried, isEmpty
+            }
+                - Going to have to group several
+                - isEmpty used for words that have no data (mostly fake words or gibberish that was tokenized)
+                - For multi-part words, use syllable count and ultima from last word
+                - If no syllable info, use syllable library
+    - Tag
+        - Add tags
+            - Based on relations from Words API
+            - e.g. city, animal, fish (should make a hashmap)
+    - Relate
+        - Add relations
+            - Synonyms (synonyms)
+            - Antonyms (antonyms)
+            - Hypernyms (typeOf / more generic form / hatchback -> car)
+            - Hyponyms (hasTypes / more specific form / purple -> violet, lavender
+            - Holonyms (partOf / larger part / finger -> hand)
+            - Meronyms (hasPart / constiuent part / building -> plumbing)
+            - Similars (similarTo, also, entails / words similar, but not synonymous)
+                - We should keep these separate in the DB, but when this flag is set, we retrieve both relations
+        - For each relation, fetch the word from the API if we either don't have it, or do have it but have
+        relationsQueried = false
+            - But when we fetch it, set its relationsQueried = false
+    - Synonymize
+        - Potentially this will involve line synonymizations
+    - Denormalize
+    - Detokenize
