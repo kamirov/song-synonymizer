@@ -7,6 +7,7 @@ const Database = use('Database');
 
 const TermService = use('App/Services/TermService');
 const Term = use('App/Models/Term');
+const TermRelation = use('App/Models/TermRelation');
 
 class SynonymService {
 
@@ -410,11 +411,35 @@ class SynonymService {
       termQuery = termQuery.where('partOfSpeech', token.partOfSpeech);
     }
 
-
-    // TODO: Add a relation kind check
-    // builder.where('termRelations.kind')
-
     let relationsFilter = builder => {
+
+      // Kinds check
+      let allowableKinds = [];
+      if (this._flags.includeSynonyms) {
+        allowableKinds.push(TermRelation.KIND.SYNONYM);
+      }
+      if (this._flags.includeAntonyms) {
+        allowableKinds.push(TermRelation.KIND.ANTONYM);
+      }
+      if (this._flags.includeHypernyms) {
+        allowableKinds.push(TermRelation.KIND.HYPERNYM);
+      }
+      if (this._flags.includeHyponyms) {
+        allowableKinds.push(TermRelation.KIND.HYPONYM);
+      }
+      if (this._flags.includeHolonyms) {
+        allowableKinds.push(TermRelation.KIND.HOLONYM);
+      }
+      if (this._flags.includeMeronyms) {
+        allowableKinds.push(TermRelation.KIND.MERONYM);
+      }
+      if (this._flags.includeSimilars) {
+        allowableKinds = allowableKinds.concat(TermRelation.SIMILAR_KINDS);
+      }
+
+      console.log('allowableKinds', allowableKinds);
+      builder.whereInPivot('kind', allowableKinds);
+
       if (this._flags.preserveTermSyllableCount
         || (this._flags.preserveLineSyllableCount && isLastTerm)) {
         // TODO: Feels like there's a way to do this without a subquery
