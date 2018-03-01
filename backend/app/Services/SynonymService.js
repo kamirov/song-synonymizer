@@ -93,14 +93,26 @@ class SynonymService {
     let tokensWithSynonymization = await this._addSynonymization(tokensWithRelations);
 
     // Denormalize
-    let denormalizedTokens = this._denormalizeTokens(tokensWithSynonymization);
+    let denormalizedTermNames = this._denormalizeTokens(tokensWithSynonymization);
 
-    return denormalizedTokens;
+    return denormalizedTermNames;
 
-    // Detokenize
+    // Correct
+    let correctedNames = this._correctTermNames(denormalizedTermNames);
+
+    // Detokenizes
     let synonymizedText = denormalizedTokens.map(token => token.name).join(' ');
 
     return synonymizedText;
+  }
+
+  _correctTermNames(termNames) {
+    let correctedTermNames = termNames.slice()
+
+    // For now just the articles (maybe add more corrections later)
+    correctedTermNames = _correctArticles(termNames);
+
+    return correctedTermNames;
   }
 
   async _denormalizeTokens(tokens) {
