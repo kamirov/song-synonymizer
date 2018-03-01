@@ -4,7 +4,7 @@ const AbstractModel = use('App/Models/AbstractModel')
 
 class Term extends AbstractModel {
 
-  related() {
+  relations() {
     return this.belongsToMany('App/Models/Term', 'termId', 'relatedId').pivotTable('termRelations');
   }
 

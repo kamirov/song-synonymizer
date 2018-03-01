@@ -106,16 +106,39 @@ class TermStorageService {
           ultima: externalTerm[pos].ultima,
           relationsQueried: shouldAddRelations
         };
-        await Term.create(termParams);
+        let mainTerm = await Term.create(termParams);
 
         if (shouldAddRelations) {
-          let relatedTerms = Object.values(TermRelation.KIND).reduce((terms, kind) => {
-            return terms.concat(externalTerm[pos][kind])
-          }, []);
 
-          for (let term of relatedTerms) {
-            await this._addNewTerm(term, false);
+          for (let kind of Object.values(TermRelation.KIND)) {
+            let termNames = externalTerm[pos][kind];
+
+            if (!termNames.length) {
+              continue;
+            }
+
+            for (let termName of termNames) {
+              await this._addNewTerm(termName, false);
+
+              // Don't like that we have to do this extra get here, but unsure of how to get around it
+              let relatedTerm = await Term.query().where({
+                name: termName,
+                partOfSpeech: pos
+              }).first();
+
+              console.log(termName, pos, relatedTerm);
+
+              // Relate the two
+              await mainTerm.relations().attach(relatedTerm.id, row => {
+                row.kind = kind;
+              });
+            }
           }
+
+
+
+        } else {
+
         }
       }
     } else {
