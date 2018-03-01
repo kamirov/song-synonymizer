@@ -174,6 +174,12 @@ class TermService {
         normalizedTerm = nlp(normalizedTerm).verbs().toInfinitive().out('text');
       }
 
+      // Expand contractions
+      if (token.tags.includes('Contraction')) {
+        // TODO: I feel like there's a cleaner way to do this using the original nlp instance
+        normalizedTerm = nlp(normalizedTerm).contractions().expand().out('text');
+      }
+
       return {
         term: normalizedTerm,
         partOfSpeech: partOfSpeech,
