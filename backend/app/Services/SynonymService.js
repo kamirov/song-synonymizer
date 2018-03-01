@@ -77,15 +77,10 @@ class SynonymService {
     let tokens = this._termService.createNormalizedTokens(text);
     let tokensWithValidation = this._markupIgnoredTokens(tokens);
 
-    return tokensWithValidation;
-
-    // Fetch, Tag, Relate
-    await this._getTermsOrFetch(tokens);
+    // Synonymize
+    let tokensWithRelations = await this._addRelations(tokensWithValidation);
 
     return tokensWithRelations;
-
-    // Synonymize
-    let synonymizedTokens = await this._synonymize(tokensWithRelations);
 
     // Denormalize
     let tokenStates = tokensWithValidation.map(token => token.state);
@@ -97,16 +92,35 @@ class SynonymService {
     return synonymizedText;
   }
 
-  /**
-   * @param tokens
-   * @private
-   */
-  _getTermsOrFetch(tokens) {
 
+  async _addRelations(tokens) {
 
+    let synonymPromises = tokens.map(async (token, tokenIdx) => {
+
+      if (token.ignored) {
+        return;
+      }
+
+      let isLast = tokenIdx === (tokens.length-1)
+
+      let termWithSynonyms = await this._getTermAndSynonyms(token, isLast);
+      console.log(termWithSynonyms);
+      // Add main term elements to token
+      token.syllablesCount = termWithSynonyms.syllablesCount;
+      token.ultima = termWithSynonyms.ultima;
+
+      token.replacements = termWithSynonyms.toJSON().relations.map(replacement => ({
+        name: replacement.
+          name,
+        syllablesCount: replacement.syllablesCount,
+        ultima: replacement.ultima,
+        partOfSpeech: replacement.partOfSpeech
+      }))
+    });
+
+    let termsWithSynonyms = await Promise.all(synonymPromises);
 
     return tokens;
-
   }
 
   /**
@@ -115,11 +129,11 @@ class SynonymService {
    * @private
    */
   _markupIgnoredTokens(tokens) {
-    console.log(tokens)
+    // console.log(tokens)
     return tokens.map(token => {
       return {
         ...token,
-        ignored: this._shouldIgnoreToken(token.term, token.state.tags)
+        ignored: this._shouldIgnoreToken(token.name, token.state.tags)
       }
     })
   }
@@ -144,9 +158,6 @@ class SynonymService {
 
     return false;
   }
-
-
-
 
   // BELOW POTENTIALLY DEPRECATED
 
@@ -295,10 +306,15 @@ class SynonymService {
 
     let termQuery = Term
       .query()
-      .where('name', token)
+      .where('name', token.name)
+      .where('partOfSpeech', token.partOfSpeech);
 
     if (!this._isTermExcludedByClass(token)) {
-      let synonymFilter = builder => {
+
+      // TODO: Add a relation kind check
+      // builder.where('termRelations.kind')
+
+      let relationsFilter = builder => {
         if (this._flags.preserveTermSyllableCount
           || (this._flags.preserveLineSyllableCount && isLastTerm)) {
           // TODO: Feels like there's a way to do this without a subquery
@@ -320,7 +336,7 @@ class SynonymService {
         }
       };
 
-      termQuery.with('synonyms', synonymFilter);
+      termQuery.with('relations', relationsFilter);
     }
 
     return await termQuery.first();

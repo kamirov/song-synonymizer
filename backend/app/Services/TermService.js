@@ -143,7 +143,7 @@ class TermService {
   createNormalizedTokens(text) {
 
     return nlp(text).out('terms')
-    .map(token => {
+    .map((token, tokenIdx) => {
 
       // Get token affixes
       let prefix = token.text.match(/^\W+/);
@@ -181,14 +181,13 @@ class TermService {
       }
 
       return {
-        term: normalizedTerm,
+        name: normalizedTerm,
         partOfSpeech: partOfSpeech,
         state: {
           prefix: prefix ? prefix[0] : null,
           suffix: suffix ? suffix[0] : null,
           tags: [...token.tags]
-        },
-        // debug: token
+        }
       }
 
     });
