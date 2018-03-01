@@ -11,7 +11,7 @@ class TermService {
 
   static get EMPTY_TERM_PARAMS() {
     return {
-      hasCheckedSynonyms: true,
+      relationsQueried: true,
       isEmpty: true
     }
   }

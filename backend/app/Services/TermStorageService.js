@@ -7,6 +7,7 @@ const pluralize = require('pluralize');
 const ExternalTermService = use('App/Services/ExternalTermService');
 const TermService = use('App/Services/TermService');
 const Term = use('App/Models/Term');
+const TermRelation = use('App/Models/TermRelation');
 
 class TermStorageService {
 
@@ -80,7 +81,7 @@ class TermStorageService {
     let term = await Term.findBy('name', name);
 
     if (!term) {
-      term = await this._addNewTerm(name);
+      term = await this._addNewTerm(name, true);
     }
 
     // if (!term.hasCheckedSynonyms) {
@@ -88,21 +89,41 @@ class TermStorageService {
     // }
   }
 
-  async _addNewTerm(name) {
-    console.log(name);
-    let termParams = await this.externalTermService.getSummary(name);
-
-    console.log(termParams);
-    return;
-
-    if (!termParams) {
-      termParams = TermService.EMPTY_TERM_PARAMS;
-      termParams.name = name;
-    }
+  async _addNewTerm(name, shouldAddRelations = false) {
+    // console.log(name);
+    let externalTerm = await this.externalTermService.getTerm(name);
 
     this.newTerms.push(name);
 
-    return await Term.create(termParams);
+    if (externalTerm) {
+      // console.log('externalTerm', externalTerm)
+      // We could have multiple pos, which we treat as separate terms
+      for (let pos in externalTerm) {
+        let termParams = {
+          name: name,
+          partOfSpeech: pos,
+          syllablesCount: externalTerm[pos].syllablesCount,
+          ultima: externalTerm[pos].ultima,
+          relationsQueried: shouldAddRelations
+        };
+        await Term.create(termParams);
+
+        if (shouldAddRelations) {
+          let relatedTerms = Object.values(TermRelation.KIND).reduce((terms, kind) => {
+            return terms.concat(externalTerm[pos][kind])
+          }, []);
+
+          for (let term of relatedTerms) {
+            await this._addNewTerm(term, false);
+          }
+        }
+      }
+    } else {
+      let termParams = TermService.EMPTY_TERM_PARAMS;
+      termParams.name = name;
+      await Term.create(termParams);
+    }
+
   }
 
   async _recursivelyAddSynonyms(term, currentDepth = 1) {

@@ -1,12 +1,15 @@
 'use strict'
 
 const fetch = require('node-fetch');
+const syllable = require('syllable');
+
 
 const Redis = use('Redis')
 const Env = use('Env');
 const Logger = use('Logger');
 
 const TermService = use('App/Services/TermService');
+const TermRelation = use('App/Models/TermRelation');
 
 /**
  * Words API wrapper service
@@ -41,41 +44,55 @@ class ExternalTermService {
     }
   }
 
+  static get DEFAULT_TERM_SUMMARY() {
+    return {
+      ultima: null,
+      syllablesCount: null,
+      // TODO: Loop this
+      [TermRelation.KIND.SYNONYM]: [],
+      [TermRelation.KIND.ANTONYM]: [],
+      [TermRelation.KIND.HYPERNYM]: [],
+      [TermRelation.KIND.HYPONYM]: [],
+      [TermRelation.KIND.HOLONYM]: [],
+      [TermRelation.KIND.MERONYM]: [],
+      [TermRelation.KIND.SIMILAR]: [],
+      [TermRelation.KIND.IMPLICATION]: [],
+      [TermRelation.KIND.OTHER]: [],
+    }
+  }
+
+  // Mapping of our fields to Words API fields
+  static get RELATIONS_FIELDS_MAP() {
+    return {
+      [TermRelation.KIND.SYNONYM]: 'synonyms',
+      [TermRelation.KIND.ANTONYM]: 'antonyms',
+      [TermRelation.KIND.HYPERNYM]: 'typeOf',
+      [TermRelation.KIND.HYPONYM]: 'hasTypes',
+      [TermRelation.KIND.HOLONYM]: 'partOf',
+      [TermRelation.KIND.MERONYM]: 'hasParts',
+      [TermRelation.KIND.SIMILAR]: 'similarTo',
+      [TermRelation.KIND.IMPLICATION]: 'entails',
+      [TermRelation.KIND.OTHER]: 'also',
+    }
+  }
+
   constructor() {
     this._termService = new TermService;
   }
 
   /**
-   * Fetches summary from the Words API
+   * Fetches term from the Words API
    * @param {string} name
    * @returns {Promise<Object>}
    */
-  async getSummary(name) {
+  async getTerm(name) {
 
     let response = await this._fetch(
       ExternalTermService.API_ENDPOINTS.summary.replace(':word', name),
       ExternalTermService.REQUEST_GET_CONFIG);
 
-    return;
     return this._parseSummary(await response.json());
   }
-
-
-
-  /**
-   * Fetches synonyms from the Words API
-   * @param {string} word
-   * @returns {Promise<string[]>}
-   */
-  async getSynonyms(word) {
-
-    let response = await this._fetch(
-      ExternalTermService.API_ENDPOINTS.synonyms.replace(':word', word),
-      ExternalTermService.REQUEST_GET_CONFIG);
-
-    return this._parseSynonyms(await response.json())
-  }
-
 
   /**
    * Parses relevant summary information
@@ -89,43 +106,53 @@ class ExternalTermService {
       return;
     }
 
-    let summary = {
-      name: null,
-      syllablesCount: null,
-      ultima: null
-    };
+    let relations = {};
 
-    summary = Object.assign({}, summary, {
-      name: summaryResponse.word,
-      syllablesCount: (summaryResponse.syllables ? summaryResponse.syllables.count : null),
-    });
+    // Add pos containers and relations
+    summaryResponse.results.forEach(result => {
+      let pos = result.partOfSpeech;
 
-    if (summaryResponse.pronunciation) {
-      let ipa = summaryResponse.pronunciation.all || summaryResponse.pronunciation;
-      summary.ultima = this._termService.getUltima(ipa);
+      if (!relations[pos]) {
+        relations[pos] = ExternalTermService.DEFAULT_TERM_SUMMARY;
+      }
+
+      // Add relations
+      for (let relationType in ExternalTermService.RELATIONS_FIELDS_MAP) {
+        let externalField = ExternalTermService.RELATIONS_FIELDS_MAP[relationType];
+        if (result[externalField] && result[externalField].length) {
+          relations[pos][relationType] = relations[pos][relationType].concat(result[externalField]);
+        }
+      }
+    })
+
+    // Pronunciations and syllables
+    for (let pos in relations) {
+
+      if (summaryResponse.pronunciation) {
+        // Some words have a pos-based pronunciation, some entries in the Words API are incomplete
+        let ipa = summaryResponse.pronunciation[pos]
+          || summaryResponse.pronunciation.all
+          || summaryResponse.pronunciation;
+        relations[pos].ultima = this._termService.getUltima(ipa);
+      } else {
+        // TODO: Use an external service to get an IPA, then extract the ultima
+        relations[pos].ultima = null;
+      }
+
+      if (summaryResponse.syllables && summaryResponse.syllables.count) {
+        relations[pos].syllablesCount = summaryResponse.syllables.count
+      } else {
+        relations[pos].syllablesCount = syllable(summaryResponse.word);
+      }
     }
 
-    return summary;
-  }
-
-
-  /**
-   * Parses relevant synonyms information
-   * @param synonymsResponse
-   * @returns {string[]}
-   * @private
-   */
-
-  _parseSynonyms(synonymsResponse) {
-    // Pretty simple right now, but wanted to have a consistent get/parse pattern for each Words API endpoint
-    let synonyms = synonymsResponse.synonyms;
-    return synonyms;
+    return relations;
   }
 
 
   async _fetch(endpoint, config) {
     Logger.info('About to make an API call to:', endpoint);
-    await this._updateApiCallsCount();
+    // await this._updateApiCallsCount();
     return await fetch(endpoint, config);
   }
 
