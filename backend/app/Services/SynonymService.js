@@ -14,7 +14,7 @@ class SynonymService {
     return {
       preserveTermSyllableCount: false,
       preserveLineSyllableCount: false,
-      preserveTermRhyme: true,
+      preserveTermRhyme: false,
       preserveLineRhyme: false,
 
       preservePronouns: true,
@@ -82,16 +82,19 @@ class SynonymService {
     let tokensWithRelations = await this._addTermAndReplacements(tokensWithValidation);
     let tokensWithSynonymization = await this._addSynonymization(tokensWithRelations);
 
-    return tokensWithSynonymization;
-
     // Denormalize
-    let tokenStates = tokensWithValidation.map(token => token.state);
-    let denormalizedTokens = this._denormalize(synonymizedTokens, tokenStates);
+    let denormalizedTokens = this._denormalizeTokens(tokensWithSynonymization);
+
+    return denormalizedTokens;
 
     // Detokenize
     let synonymizedText = denormalizedTokens.map(token => token.name).join(' ');
 
     return synonymizedText;
+  }
+
+  async _denormalizeTokens(tokens) {
+    return tokens;
   }
 
   async _addSynonymization(tokens) {
@@ -110,8 +113,6 @@ class SynonymService {
       // console.log('originalSyllableCount', originalSyllableCount);
 
     } else {
-
-
       return tokens.map((token, tokenIdx) => {
         let synonymization;
         if (token.ignored || token.replacements.length === 0) {
@@ -201,7 +202,7 @@ class SynonymService {
    */
   _shouldIgnoreToken(term, tags) {
     // TODO: Move to const
-    const ignoredTags = ['Determiner', 'Pronoun', 'Contraction', 'Conjunction', 'Copula', 'Modal', 'Auxiliary', 'Negative'];
+    const ignoredTags = ['Determiner', 'Pronoun', 'Contraction', 'Conjunction', 'Copula', 'Modal', 'Auxiliary', 'Negative', 'Acronym'];
 
     if (tags.filter(tag => ignoredTags.includes(tag)).length
         || this._termService.isIgnoredTerm(term)
@@ -249,9 +250,7 @@ class SynonymService {
 
         let isLastTerm = tokenIdx === (tokens.length-1)
 
-        let term = await this._getTermAndSynonyms(sanitizedToken, isLastTerm);
-        // console.log(sanitizedToken, tokenStates);
-        return term;
+        return await this._getTermAndSynonyms(sanitizedToken, isLastTerm);
       });
 
       let termsWithSynonyms = await Promise.all(synonymPromises);
@@ -411,8 +410,6 @@ class SynonymService {
     };
 
     termQuery.with('relations', relationsFilter);
-
-    console.log(termQuery.toSQL().sql)
 
     return await termQuery.first();
   }

@@ -101,7 +101,8 @@ class ExternalTermService {
    */
   _parseSummary(summaryResponse) {
 
-    if ('success' in summaryResponse && summaryResponse.success === false) {
+    if (('success' in summaryResponse && summaryResponse.success === false)
+        || !summaryResponse.results) {
       return;
     }
 

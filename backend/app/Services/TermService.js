@@ -158,6 +158,11 @@ class TermService {
         normalizedTerm = normalizedTerm.substring(prefix.length);
       }
 
+      // UGH. Sometimes affixes get PARTIALLY stripped, (e.g. word,"), so strip all non-ascii chars from ends of
+      // normalized text (just in case)
+      normalizedTerm = normalizedTerm.replace(/^\W+/, '')
+      normalizedTerm = normalizedTerm.replace(/\W+$/, '')
+
       // Get likely part of speech (assume it's the first common POS in the tags list)
       const mainPartsOfSpeech = ['Noun', 'Verb', 'Adverb', 'Preposition', 'Conjunction'];
       let partOfSpeech = token.tags[0].toLowerCase();
@@ -182,6 +187,12 @@ class TermService {
         // TODO: I feel like there's a cleaner way to do this using the original nlp instance
         normalizedTerm = nlp(normalizedTerm).contractions().expand().out('text');
       }
+
+      // Singularize
+      if (token.tags.includes('Plural')) {
+        normalizedTerm = nlp(normalizedTerm).nouns().toSingular().out('text');
+      }
+
 
       return {
         name: normalizedTerm,

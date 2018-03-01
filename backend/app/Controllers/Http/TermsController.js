@@ -2,7 +2,6 @@
 
 const TermStorageService = use('App/Services/TermStorageService');
 const TermService = use('App/Services/TermService');
-const Term = use ('App/Models/Term');
 
 class TermController {
 
