@@ -17,6 +17,15 @@ class SynonymService {
       preserveTermRhyme: false,
       preserveLineRhyme: false,
 
+      includeSynonyms: true,
+      includeAntonyms: true,
+      includeHypernyms: true,
+      includeHyponyms: true,
+      includeHolonyms: true,
+      includeMeronyms: true,
+      includeSimilars: true,
+
+      // Deprecated
       preservePronouns: true,
       preserveArticles: true,
       preserveConjunctions: true,
@@ -129,17 +138,15 @@ class SynonymService {
   async _addSynonymization(tokens) {
 
     if (this._flags.preserveLineSyllableCount) {
-      // TODO: Fill this in
-      // Hard mode
-      // let originalSyllableCount = termsWithSynonyms.reduce((runningCount, term) => {
-      //   if (!term.name || this._isPunctuation(term.name)) {
-      //     return runningCount
-      //   } else {
-      //     return runningCount + (term.syllablesCount || SynonymService.ASSUMED_SYLLABLE_COUNT)
-      //   }
-      // }, 0);
-      //
-      // console.log('originalSyllableCount', originalSyllableCount);
+
+      // Get original syllable count
+      let originalSyllableCount = tokens.reduce((runningCount, token) => {
+        return runningCount + token.syllablesCount;
+      }, 0);
+      console.log('originalSyllableCount', originalSyllableCount)
+
+      // Get all synonym groupings that meet the syllable count
+      // TODO
 
     } else {
       return tokens.map((token, tokenIdx) => {
