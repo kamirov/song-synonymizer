@@ -14,8 +14,9 @@ class SynonymService {
     return {
       preserveTermSyllableCount: false,
       preserveLineSyllableCount: false,
-      preserveTermRhyme: false,
+      preserveTermRhyme: true,
       preserveLineRhyme: false,
+
       preservePronouns: true,
       preserveArticles: true,
       preserveConjunctions: true,
@@ -118,9 +119,10 @@ class SynonymService {
         } else {
           synonymization = this._getRandomArrayElement(token.replacements).name;
         }
+
         return {
           ...token,
-          synonymization: synonymization
+          synonymization: synonymization,
         }
       })
 
@@ -367,40 +369,50 @@ class SynonymService {
     .where('name', token.name)
     .where('partOfSpeech', token.partOfSpeech)
     .getCount();
+    count = parseInt(count);
 
-    if (parseInt(count)) {
+    if (count) {
       termQuery = termQuery.where('partOfSpeech', token.partOfSpeech);
     }
 
-    if (!this._isTermExcludedByClass(token)) {
 
-      // TODO: Add a relation kind check
-      // builder.where('termRelations.kind')
+    // TODO: Add a relation kind check
+    // builder.where('termRelations.kind')
 
-      let relationsFilter = builder => {
-        if (this._flags.preserveTermSyllableCount
-          || (this._flags.preserveLineSyllableCount && isLastTerm)) {
-          // TODO: Feels like there's a way to do this without a subquery
-          let subquery = Database.select('syllablesCount')
-            .from('terms')
-            .where('name', token);
+    let relationsFilter = builder => {
+      if (this._flags.preserveTermSyllableCount
+        || (this._flags.preserveLineSyllableCount && isLastTerm)) {
+        // TODO: Feels like there's a way to do this without a subquery
+        let subquery = Database.select('syllablesCount')
+          .from('terms')
+          .where('name', token.name
+          );
 
-          builder.where('syllablesCount', subquery)
+        if (count) {
+          subquery.where('partOfSpeech', token.partOfSpeech);
+        }
+        console.log('aaaa');
+        builder.where('syllablesCount', subquery)
+      }
+
+      if (this._flags.preserveTermRhyme
+        || (this._flags.preserveLineRhyme && isLastTerm)) {
+        // TODO: Feels like there's a way to do this without a subquery
+        let subquery = Database.select('ultima')
+          .from('terms')
+          .where('name', token.name);
+
+        if (count) {
+          subquery.where('partOfSpeech', token.partOfSpeech);
         }
 
-        if (this._flags.preserveTermRhyme
-          || (this._flags.preserveLineRhyme && isLastTerm)) {
-          // TODO: Feels like there's a way to do this without a subquery
-          let subquery = Database.select('ultima')
-            .from('terms')
-            .where('name', token);
+        builder.where('ultima', subquery)
+      }
+    };
 
-          builder.where('ultima', subquery)
-        }
-      };
+    termQuery.with('relations', relationsFilter);
 
-      termQuery.with('relations', relationsFilter);
-    }
+    console.log(termQuery.toSQL().sql)
 
     return await termQuery.first();
   }
