@@ -171,7 +171,10 @@ class TermService {
       // Conjugate verb to infinitive (but keep tags)
       if (token.tags.includes('Verb')) {
         // TODO: I feel like there's a cleaner way to do this using the original nlp instance
-        normalizedTerm = nlp(normalizedTerm).verbs().toInfinitive().out('text');
+        let possibleVerb = nlp(normalizedTerm).verbs().toInfinitive().out('text');
+        if (possibleVerb) {
+          normalizedTerm = possibleVerb;
+        }
       }
 
       // Expand contractions

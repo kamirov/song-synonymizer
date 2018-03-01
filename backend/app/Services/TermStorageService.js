@@ -3,6 +3,7 @@
 const Logger = use('Logger');
 
 const pluralize = require('pluralize');
+const syllable = require('syllable');
 
 const ExternalTermService = use('App/Services/ExternalTermService');
 const TermService = use('App/Services/TermService');
@@ -21,10 +22,10 @@ class TermStorageService {
     let tokens = this._termService.createNormalizedTokens(text);
 
     let potentialNewTerms = tokens
-    .filter(token => token.term);
+    .filter(token => token.name);
 
     for (let term of potentialNewTerms) {
-      await this._addTermIfNewWithRelations(term.term);
+      await this._addTermIfNewWithRelations(term.name);
     }
 
     return this.newTerms;
@@ -33,6 +34,7 @@ class TermStorageService {
   // Private methods
 
   async _addTermIfNewWithRelations(name) {
+    console.log(name);
     let term = await Term.findBy('name', name);
 
     if (!term) {
@@ -156,6 +158,7 @@ class TermStorageService {
     } else {
       let termParams = TermService.EMPTY_TERM_PARAMS;
       termParams.name = name;
+      termParams.syllablesCount = syllable(name); // TODO: This should be done in the external service (or otherwise in some middle service)
       await Term.create(termParams);
     }
   }

@@ -78,9 +78,10 @@ class SynonymService {
     let tokensWithValidation = this._markupIgnoredTokens(tokens);
 
     // Synonymize
-    let tokensWithRelations = await this._addRelations(tokensWithValidation);
+    let tokensWithRelations = await this._addTermAndReplacements(tokensWithValidation);
+    let tokensWithSynonymization = await this._addSynonymization(tokensWithRelations);
 
-    return tokensWithRelations;
+    return tokensWithSynonymization;
 
     // Denormalize
     let tokenStates = tokensWithValidation.map(token => token.state);
@@ -92,24 +93,74 @@ class SynonymService {
     return synonymizedText;
   }
 
+  async _addSynonymization(tokens) {
 
-  async _addRelations(tokens) {
+    if (this._flags.preserveLineSyllableCount) {
+      // TODO: Fill this in
+      // Hard mode
+      // let originalSyllableCount = termsWithSynonyms.reduce((runningCount, term) => {
+      //   if (!term.name || this._isPunctuation(term.name)) {
+      //     return runningCount
+      //   } else {
+      //     return runningCount + (term.syllablesCount || SynonymService.ASSUMED_SYLLABLE_COUNT)
+      //   }
+      // }, 0);
+      //
+      // console.log('originalSyllableCount', originalSyllableCount);
+
+    } else {
+
+
+      return tokens.map((token, tokenIdx) => {
+        let synonymization;
+        if (token.ignored || token.replacements.length === 0) {
+          synonymization = token.name;
+        } else {
+          synonymization = this._getRandomArrayElement(token.replacements).name;
+        }
+        return {
+          ...token,
+          synonymization: synonymization
+        }
+      })
+
+      // token.synonymization =
+      //
+      // // Easy mode
+      // replacements = termsWithSynonyms.map(term => {
+      //   if (!term.isDisqualified) {
+      //     term = term.toJSON();
+      //   }
+      //   if (term.synonyms && term.synonyms.length) {
+      //     let options = term.synonyms.slice();
+      //     options.push({ name: term.name });
+      //     return this._getRandomArrayElement(options).name;
+      //   } else {
+      //     return term.name;
+      //   }
+      // })
+    }
+
+
+    return tokens;
+  }
+
+  async _addTermAndReplacements(tokens) {
 
     let synonymPromises = tokens.map(async (token, tokenIdx) => {
 
-      if (token.ignored) {
-        return;
-      }
+      let isLast = tokenIdx === (tokens.length-1);
 
-      let isLast = tokenIdx === (tokens.length-1)
+      console.log('-----------');
+      console.log(token);
 
-      let termWithSynonyms = await this._getTermAndSynonyms(token, isLast);
-      console.log(termWithSynonyms);
+      let termWithSynonyms = (await this._getTermAndSynonyms(token, isLast)).toJSON();
+      // console.log(termWithSynonyms);
       // Add main term elements to token
       token.syllablesCount = termWithSynonyms.syllablesCount;
       token.ultima = termWithSynonyms.ultima;
 
-      token.replacements = termWithSynonyms.toJSON().relations.map(replacement => ({
+      token.replacements = termWithSynonyms.relations.map(replacement => ({
         name: replacement.
           name,
         syllablesCount: replacement.syllablesCount,
@@ -118,7 +169,7 @@ class SynonymService {
       }))
     });
 
-    let termsWithSynonyms = await Promise.all(synonymPromises);
+    await Promise.all(synonymPromises);
 
     return tokens;
   }
@@ -305,9 +356,21 @@ class SynonymService {
   async _getTermAndSynonyms(token, isLastTerm) {
 
     let termQuery = Term
-      .query()
-      .where('name', token.name)
-      .where('partOfSpeech', token.partOfSpeech);
+    .query()
+    .where('name', token.name);
+
+    // Only add the POS condition if we have a match for a row with the pos (this helps overcome problems with NLP
+    // packages marking words as one POS and the Words API marking them as something else. That said, I HATE this
+    // solution.
+    let count = await Term
+    .query()
+    .where('name', token.name)
+    .where('partOfSpeech', token.partOfSpeech)
+    .getCount();
+
+    if (parseInt(count)) {
+      termQuery = termQuery.where('partOfSpeech', token.partOfSpeech);
+    }
 
     if (!this._isTermExcludedByClass(token)) {
 

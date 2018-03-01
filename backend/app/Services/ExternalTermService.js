@@ -3,7 +3,6 @@
 const fetch = require('node-fetch');
 const syllable = require('syllable');
 
-
 const Redis = use('Redis')
 const Env = use('Env');
 const Logger = use('Logger');
