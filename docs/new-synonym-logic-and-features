@@ -32,7 +32,7 @@ Synonymization
             - Hypernyms (typeOf / more generic form / hatchback -> car)
             - Hyponyms (hasTypes / more specific form / purple -> violet, lavender
             - Holonyms (partOf / larger part / finger -> hand)
-            - Meronyms (hasPart / constiuent part / building -> plumbing)
+            - Meronyms (hasParts / constiuent part / building -> plumbing)
             - Similars (similarTo, also, entails / words similar, but not synonymous)
                 - We should keep these separate in the DB, but when this flag is set, we retrieve both relations
         - For each relation, fetch the word from the API if we either don't have it, or do have it but have
