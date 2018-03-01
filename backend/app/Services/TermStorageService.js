@@ -83,12 +83,12 @@ class TermStorageService {
 
             if (!relatedTerm) {
               await this._addNewTerm(termName, false);
-            }
 
-            relatedTerm = await Term.query().where({
-              name: termName,
-              partOfSpeech: pos
-            }).first();
+              relatedTerm = await Term.query().where({
+                name: termName,
+                partOfSpeech: pos
+              }).first();
+            }
 
             // Relate the two
             await mainTerm.relations().attach(relatedTerm.id, row => {
@@ -117,7 +117,8 @@ class TermStorageService {
     this.newTerms.push(name);
 
     if (externalTerm) {
-      // console.log('externalTerm', externalTerm)
+      // console.log('externalTerm', exte
+      // rnalTerm)
       // We could have multiple pos, which we treat as separate terms
       for (let pos in externalTerm) {
         let termParams = {
@@ -139,13 +140,20 @@ class TermStorageService {
             }
 
             for (let termName of termNames) {
-              await this._addNewTerm(termName, false);
-
               // Don't like that we have to do this extra get here, but unsure of how to get around it
               let relatedTerm = await Term.query().where({
                 name: termName,
                 partOfSpeech: pos
               }).first();
+
+              if (!relatedTerm) {
+                await this._addNewTerm(termName, false);
+
+                relatedTerm = await Term.query().where({
+                  name: termName,
+                  partOfSpeech: pos
+                }).first();
+              }
 
               // Relate the two
               await mainTerm.relations().attach(relatedTerm.id, row => {
@@ -162,6 +170,7 @@ class TermStorageService {
       await Term.create(termParams);
     }
   }
+
 }
 
 module.exports = TermStorageService;

@@ -94,7 +94,36 @@ class SynonymService {
   }
 
   async _denormalizeTokens(tokens) {
-    return tokens;
+    return tokens.map(token => {
+
+      let name = token.name;
+
+      if (token.state.tags.includes('Plural')) {
+        // Can probably do this with the NLP package as well
+        name = pluralize.plural(name);
+      }
+
+      if (token.state.tags.includes('TitleCase')) {
+        name = name[0].toUpperCase() + name.slice(1);
+      }
+
+      if (token.state.tags.includes('Acronym')) {
+        name = name.toUpperCase();
+      }
+
+      // TODO: denormalize verbs
+      // if (token.state.tags.includes(''))
+
+      if (token.state.prefix) {
+        name = token.state.prefix + token.name;
+      }
+
+      if (token.state.suffix) {
+        name += token.state.suffix;
+      }
+
+      return name
+    })
   }
 
   async _addSynonymization(tokens) {
