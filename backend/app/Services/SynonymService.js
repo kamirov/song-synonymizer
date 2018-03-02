@@ -84,24 +84,33 @@ class SynonymService {
    * @returns {Promise<string>}
    */
   async processText(text) {
-    // Tokenize, normalize, invalidate
-    let tokens = this._termService.createNormalizedTokens(text);
-    let tokensWithValidation = this._markupIgnoredTokens(tokens);
+    let lines = this._splitTextIntoLines(text);
 
-    // Synonymize
-    let tokensWithRelations = await this._addTermAndReplacements(tokensWithValidation);
-    let tokensWithSynonymization = await this._addSynonymization(tokensWithRelations);
+    let linesPromises = lines.map(async line => {
 
-    // Denormalize
-    let denormalizedTermNames = await this._denormalizeTokens(tokensWithSynonymization);
+      // Tokenize, normalize, invalidate
+      let tokens = this._termService.createNormalizedTokens(line);
+      let tokensWithValidation = this._markupIgnoredTokens(tokens);
 
-    // Correct
-    let correctedNames = this._correctTermNames(denormalizedTermNames);
+      // Synonymize
+      let tokensWithRelations = await this._addTermAndReplacements(tokensWithValidation);
+      let tokensWithSynonymization = await this._addSynonymization(tokensWithRelations);
 
-    // Detokenizes
-    let synonymizedText = correctedNames.join(' ');
+      // Denormalize
+      let denormalizedTermNames = await this._denormalizeTokens(tokensWithSynonymization);
 
-    return synonymizedText;
+      // Correct
+      let correctedNames = this._correctTermNames(denormalizedTermNames);
+
+      // Detokenizes
+      let synonymizedText = correctedNames.join(' ');
+
+      return synonymizedText;
+
+    });
+
+    // return await Promise.all(linesPromises);
+    return (await Promise.all(linesPromises)).join('\n');
   }
 
   _correctTermNames(termNames) {
