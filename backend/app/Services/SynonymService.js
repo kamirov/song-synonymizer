@@ -299,18 +299,22 @@ class SynonymService {
       // console.log('-----------');
       // console.log(token);
 
-      let termWithSynonyms = (await this._getTermAndSynonyms(token, isLast)).toJSON();
+      try {
+        let termWithSynonyms = (await this._getTermAndSynonyms(token, isLast)).toJSON();
 
-      // Add main term elements to token
-      token.syllablesCount = termWithSynonyms.syllablesCount;
-      token.ultima = termWithSynonyms.ultima;
-
-      token.replacements = termWithSynonyms.relations.map(replacement => ({
-        name: replacement.name,
-        syllablesCount: replacement.syllablesCount,
-        ultima: replacement.ultima,
-        partOfSpeech: replacement.partOfSpeech
-      }))
+        // Add main term elements to token
+        token.syllablesCount = termWithSynonyms.syllablesCount;
+        token.ultima = termWithSynonyms.ultima;
+  
+        token.replacements = termWithSynonyms.relations.map(replacement => ({
+          name: replacement.name,
+          syllablesCount: replacement.syllablesCount,
+          ultima: replacement.ultima,
+          partOfSpeech: replacement.partOfSpeech
+        }))  
+      } catch(e) {
+        token.replacements = [];
+      }
 
       if (this._flags.includeOriginals) {
         token.replacements.push({
