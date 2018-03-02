@@ -1,15 +1,15 @@
 import React from 'react';
-import {withStyles} from 'material-ui/styles';
+import { withStyles } from 'material-ui/styles';
 import Button from 'material-ui/Button';
 import PropTypes from 'prop-types'
-import {Grid} from 'material-ui';
+import { Grid } from 'material-ui';
 
 import FlagsListContainer from "./FlagsListContainer";
 
 const styles = theme => ({
     button: {
         width: '100%',
-        maxWidth: '201px'
+        // maxWidth: '201px'
     },
     sidebar: {
         textAlign: 'left'
