@@ -85,12 +85,15 @@ class ExternalTermService {
    * @returns {Promise<Object>}
    */
   async getTerm(name) {
-
-    let response = await this._fetch(
-      ExternalTermService.API_ENDPOINTS.summary.replace(':word', name),
-      ExternalTermService.REQUEST_GET_CONFIG);
-
-    return this._parseSummary(await response.json());
+    try {
+      let response = await this._fetch(
+        ExternalTermService.API_ENDPOINTS.summary.replace(':word', name),
+        ExternalTermService.REQUEST_GET_CONFIG);
+  
+      return this._parseSummary(await response.json());  
+    } catch(e) {
+      console.error("Misc error while fetching");
+    }
   }
 
   /**
