@@ -131,6 +131,7 @@ class SynonymService {
   async _denormalizeTokens(tokens) {
     return tokens.map(token => {
 
+      console.log(token.state);
       let name = token.synonymization;
 
       if (token.state.tags.includes('Plural')) {
@@ -276,61 +277,12 @@ class SynonymService {
     return false;
   }
 
-  // BELOW POTENTIALLY DEPRECATED
-
-  async osynonymize(text) {
-    let lines = this._splitTextIntoLines(text);
-    let linesPromises = lines.map(async line => {
-      let tokens = this._splitLineIntoTokens(line);
-
-      let tokenStates = [];
-      let synonymPromises = tokens.map(async (token, tokenIdx) => {
-        if (this._isPunctuation(token)) {
-          let term = Object.assign({}, SynonymService.DISQUALIFIED_TERM, {
-            name: token
-          });
-
-          tokenStates.push(SynonymService.DEFAULT_TOKEN_STATE);
-          return term;
-        }
-
-        let {sanitizedToken, tokenState} = this._sanitizeToken(token);
-
-        // console.log(token, sanitizedToken, tokenState);
-
-        // TODO: Don't like this repetition
-        if (this._termService.isIgnoredTerm(sanitizedToken)
-            || sanitizedToken.length < SynonymService.MIN_LETTER_COUNT_TO_SYNONYMIZE) {
-          let term = Object.assign({}, SynonymService.DISQUALIFIED_TERM, {
-            name: token
-          });
-
-          tokenStates.push(SynonymService.DEFAULT_TOKEN_STATE);
-          return term;
-        }
-
-        tokenStates.push(tokenState);
-
-        let isLastTerm = tokenIdx === (tokens.length-1)
-
-        return await this._getTermAndSynonyms(sanitizedToken, isLastTerm);
-      });
-
-      let termsWithSynonyms = await Promise.all(synonymPromises);
-      let unmodifiedReplacements = await this._replaceTermsWithSynonyms(termsWithSynonyms);
-      // return unmodifiedReplacements;
-      let replacements = this._applyOriginalTokenStateToTerms(unmodifiedReplacements, tokenStates);
-      this._correctArticles(replacements);
-
-      // return replacements;
-      // return unmodifiedReplacements;
-      return replacements.join(' ');
-    });
-
-    // return await Promise.all(linesPromises);
-    return (await Promise.all(linesPromises)).join('\n');
-  }
-
+  /**
+   * Some miscellaneous corrections
+   * @param replacements
+   * @returns {*}
+   * @private
+   */
   _correctPhrases(replacements) {
     const possessivePronouns = ['my', 'your', 'his', 'her', 'our', 'their'];
     const needOfIfPreceedingPronounWords = ['all', 'some', 'last', 'each', 'every'];
@@ -340,6 +292,11 @@ class SynonymService {
         if (needOfIfPreceedingPronounWords.includes(replacements[i])
             && possessivePronouns.includes(replacements[i + 1])) {
           replacements[i] += ' of';
+        }
+
+        // NLP engine doesn't pick this up for some reason
+        if (replacements[i] === 'i') {
+          replacements[i] = 'I';
         }
       }
 
@@ -358,75 +315,6 @@ class SynonymService {
 
     return replacements;
   }
-
-  _applyOriginalTokenStateToTerms(unmodifiedReplacements, tokenStates) {
-    return unmodifiedReplacements.map((termName, idx) => {
-      let tokenState = tokenStates[idx];
-
-      if (tokenState.plural) {
-        termName = pluralize.plural(termName);
-      }
-
-      if (tokenState.contraction) {
-        termName = termName + tokenState.contraction;
-      }
-
-      if (tokenState.capitalized) {
-        termName = termName.charAt(0).toUpperCase() + termName.slice(1);
-      }
-
-      if (tokenState.punctuationBefore) {
-        termName = tokenState.punctuationBefore + termName;
-      }
-
-      if (tokenState.punctuationAfter) {
-        termName = termName + tokenState.punctuationAfter;
-      }
-
-      return termName;
-    })
-  }
-
-
-  async _replaceTermsWithSynonyms(termsWithSynonyms) {
-
-    // return termsWithSynonyms;
-
-    let replacements;
-    if (this._flags.preserveLineSyllableCount) {
-      // TODO: Fill this in
-      // Hard mode
-      // let originalSyllableCount = termsWithSynonyms.reduce((runningCount, term) => {
-      //   if (!term.name || this._isPunctuation(term.name)) {
-      //     return runningCount
-      //   } else {
-      //     return runningCount + (term.syllablesCount || SynonymService.ASSUMED_SYLLABLE_COUNT)
-      //   }
-      // }, 0);
-      //
-      // console.log('originalSyllableCount', originalSyllableCount);
-
-      replacements = termsWithSynonyms.map(term => term.name)
-    } else {
-      // Easy mode
-      replacements = termsWithSynonyms.map(term => {
-        if (!term.isDisqualified) {
-          term = term.toJSON();
-        }
-        if (term.synonyms && term.synonyms.length) {
-          let options = term.synonyms.slice();
-          options.push({ name: term.name });
-          return this._getRandomArrayElement(options).name;
-        } else {
-          return term.name;
-        }
-      })
-    }
-
-    // return termsWithSynonyms;
-    return replacements
-  }
-
 
   _getRandomArrayElement(array) {
     // TODO: Should move to an array helper class
@@ -523,28 +411,6 @@ class SynonymService {
 
     return await termQuery.first();
   }
-
-
-  _sanitizeToken(token) {
-
-    let {term: uncontractedToken, contraction} = this._termService.uncontract(token);
-    let depunctuatedToken = uncontractedToken.replace(TermService.PUNCTUATION_REGEX, '');
-    let sanitizedToken = pluralize.singular(depunctuatedToken.toLowerCase());
-
-    let tokenState = {
-      contraction: contraction,
-      plural: pluralize.isPlural(depunctuatedToken),
-      punctuationAfter: uncontractedToken.substring(uncontractedToken.indexOf(depunctuatedToken) + depunctuatedToken.length),
-      punctuationBefore: uncontractedToken.substring(0, uncontractedToken.indexOf(depunctuatedToken)),
-      capitalized: this._startsWithCapital(depunctuatedToken)
-    };
-
-    return {
-      sanitizedToken,
-      tokenState
-    }
-  }
-
 
   _startsWithCapital(string) {
     // Credit to https://stackoverflow.com/a/46566773
