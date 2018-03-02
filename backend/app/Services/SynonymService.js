@@ -14,18 +14,18 @@ class SynonymService {
   static get DEFAULT_FLAGS() {
     return {
       preserveTermSyllableCount: false,
-      preserveLineSyllableCount: true,
+      preserveLineSyllableCount: false,
       preserveTermRhyme: false,
       preserveLineRhyme: false,
 
       includeOriginals: true,
       includeSynonyms: true,
       includeAntonyms: true,
-      includeHypernyms: false,
-      includeHyponyms: false,
-      includeHolonyms: false,
-      includeMeronyms: false,
-      includeSimilars: false,
+      includeHypernyms: true,
+      includeHyponyms: true,
+      includeHolonyms: true,
+      includeMeronyms: true,
+      includeSimilars: true,
 
       // Deprecated
       preservePronouns: true,
@@ -102,7 +102,7 @@ class SynonymService {
       // Denormalize
       let denormalizedTermNames = await this._denormalizeTokens(tokensWithSynonymization);
 
-      return denormalizedTermNames;
+      // return denormalizedTermNames;
 
       // Correct
       let correctedNames = this._correctTermNames(denormalizedTermNames);
@@ -114,7 +114,7 @@ class SynonymService {
 
     });
 
-    return await Promise.all(linesPromises);
+    // return await Promise.all(linesPromises);
     return (await Promise.all(linesPromises)).join('\n');
   }
 
