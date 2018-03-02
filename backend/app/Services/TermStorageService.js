@@ -173,9 +173,13 @@ class TermStorageService {
               }
 
               // Relate the two
-              await mainTerm.relations().attach(relatedTerm.id, row => {
-                row.kind = kind;
-              });
+              // TODO: There is a bug where sometimes a related term isn't made. Unsure of why this happens, but we
+              // should fix it
+              if (relatedTerm) {
+                await mainTerm.relations().attach(relatedTerm.id, row => {
+                  row.kind = kind;
+                });
+              }
             }
           }
         }
