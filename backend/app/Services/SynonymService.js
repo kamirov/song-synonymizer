@@ -90,7 +90,10 @@ class SynonymService {
 
       // Tokenize, normalize, invalidate
       let tokens = this._termService.createNormalizedTokens(line);
+
       let tokensWithValidation = this._markupIgnoredTokens(tokens);
+
+      // return tokensWithValidation;
 
       // Synonymize
       let tokensWithRelations = await this._addTermAndReplacements(tokensWithValidation);
@@ -109,8 +112,8 @@ class SynonymService {
 
     });
 
-    // return await Promise.all(linesPromises);
-    return (await Promise.all(linesPromises)).join('\n');
+    return await Promise.all(linesPromises);
+    // return (await Promise.all(linesPromises)).join('\n');
   }
 
   _correctTermNames(termNames) {
@@ -215,7 +218,7 @@ class SynonymService {
       console.log(token);
 
       let termWithSynonyms = (await this._getTermAndSynonyms(token, isLast)).toJSON();
-      // console.log(termWithSynonyms);
+
       // Add main term elements to token
       token.syllablesCount = termWithSynonyms.syllablesCount;
       token.ultima = termWithSynonyms.ultima;
@@ -459,7 +462,7 @@ class SynonymService {
         allowableKinds = allowableKinds.concat(TermRelation.SIMILAR_KINDS);
       }
 
-      console.log('allowableKinds', allowableKinds);
+      // console.log('allowableKinds', allowableKinds);
       builder.whereInPivot('kind', allowableKinds);
 
       if (this._flags.preserveTermSyllableCount
@@ -473,7 +476,6 @@ class SynonymService {
         if (count) {
           subquery.where('partOfSpeech', token.partOfSpeech);
         }
-        console.log('aaaa');
         builder.where('syllablesCount', subquery)
       }
 

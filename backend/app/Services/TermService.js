@@ -182,17 +182,15 @@ class TermService {
         }
       }
 
-      // Expand contractions
-      if (token.tags.includes('Contraction')) {
-        // TODO: I feel like there's a cleaner way to do this using the original nlp instance
-        normalizedTerm = nlp(normalizedTerm).contractions().expand().out('text');
-      }
-
       // Singularize
       if (token.tags.includes('Plural')) {
         normalizedTerm = nlp(normalizedTerm).nouns().toSingular().out('text');
       }
 
+      // If contraction, don't normalize (causes some bugs during synonymization)
+      if (token.tags.includes('Contraction')) {
+        normalizedTerm = token.text;
+      }
 
       return {
         name: normalizedTerm,
@@ -204,7 +202,7 @@ class TermService {
         }
       }
 
-    });
+    }).filter(token => token.name);
   }
 
 

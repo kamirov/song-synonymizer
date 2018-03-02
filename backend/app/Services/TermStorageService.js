@@ -41,6 +41,8 @@ class TermStorageService {
       await this._addNewTerm(name, true);
     } else if (!term.relationsQueried) {
       await this._addRelations(name);
+    } else {
+
     }
   }
 
