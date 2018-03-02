@@ -104,8 +104,6 @@ class SynonymService {
       // Tokenize, normalize, invalidate
       let tokens = this._termService.createNormalizedTokens(line);
 
-      // return tokens;
-
       let tokensWithValidation = this._markupIgnoredTokens(tokens);
 
       // return tokensWithValidation;
@@ -116,6 +114,8 @@ class SynonymService {
 
       // Denormalize
       let denormalizedTermNames = await this._denormalizeTokens(tokensWithSynonymization);
+
+      // return denormalizedTermNames;
 
       // Correct
       let correctedNames = this._correctTermNames(denormalizedTermNames);
@@ -148,20 +148,10 @@ class SynonymService {
 
       // console.log(token.state);
       let name = token.synonymization;
-
-      console.log(token.name, token.state.tags);
-
+      
       if (token.state.tags.includes('Plural')) {
         // Can probably do this with the NLP package as well
         name = pluralize.plural(name);
-      }
-
-      if (token.state.tags.includes('TitleCase')) {
-        name = name[0].toUpperCase() + name.slice(1);
-      }
-
-      if (token.state.tags.includes('Acronym')) {
-        name = name.toUpperCase();
       }
 
       // Conjugations
@@ -177,7 +167,19 @@ class SynonymService {
           possibleName = name + 'ing';
         }
         name = possibleName || name;
+      }
 
+      if (token.state.tags.includes('TitleCase')) {
+        if (name.length > 1) { 
+          name = name[0].toUpperCase() + name.slice(1);  
+        } else {
+          name = name[0].toUpperCase()
+        }
+        console.log(name, token.state.tags);
+      }
+
+      if (token.state.tags.includes('Acronym')) {
+        name = name.toUpperCase();
       }
 
       if (token.state.prefix) {
