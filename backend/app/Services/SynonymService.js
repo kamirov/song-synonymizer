@@ -14,7 +14,7 @@ class SynonymService {
   static get DEFAULT_FLAGS() {
     return {
       preserveTermSyllableCount: false,
-      preserveLineSyllableCount: false,
+      preserveLineSyllableCount: true,
       preserveTermRhyme: false,
       preserveLineRhyme: false,
 
@@ -126,8 +126,8 @@ class SynonymService {
 
     });
 
-    return await Promise.all(linesPromises);
-    // return (await Promise.all(linesPromises)).join('\n');
+    // return await Promise.all(linesPromises);
+    return (await Promise.all(linesPromises)).join('\n');
   }
 
   _correctTermNames(termNames) {
@@ -147,6 +147,8 @@ class SynonymService {
 
       // console.log(token.state);
       let name = token.synonymization;
+
+      console.log(token.name, token.state.tags);
 
       if (token.state.tags.includes('Plural')) {
         // Can probably do this with the NLP package as well
@@ -206,6 +208,8 @@ class SynonymService {
       })
       let allReplacementIndicesSets = this._getCartesianProduct(...replacementIndices);
 
+      console.log('a');
+      
       // Get all synonym groupings that meet the syllable count
       let synonymGroupings = [];
       allReplacementIndicesSets.forEach(replacementIndicesSet => {
@@ -230,6 +234,7 @@ class SynonymService {
         let syllablesCount = synonymGrouping.reduce((runningCount, replacement) => {
           return runningCount + replacement.syllablesCount;
         }, 0);
+
         console.log(syllablesCount, originalSyllableCount);
 
         if (syllablesCount === originalSyllableCount) {
@@ -237,11 +242,12 @@ class SynonymService {
         }
       });
 
-      console.log(synonymGroupings);
-
       // Take a random synonym grouping
       let synonymGrouping = this._getRandomArrayElement(synonymGroupings);
-      return tokens.map((token, tokenIdx) => {
+      return tokens.map(async (token, tokenIdx) => {
+        console.log('synonymGrouping', synonymGrouping);
+        console.log('tokenIdx', tokenIdx);
+        console.log('synonymGroupingIdx', await synonymGrouping[tokenIdx]);
         let synonymization = synonymGrouping[tokenIdx].name;
         return {
           ...token,
@@ -375,6 +381,7 @@ class SynonymService {
   }
 
   _getCartesianProduct(paramArray) {
+    let lim = 100;
 
     function addTo(curr, args) {
 
@@ -388,7 +395,7 @@ class SynonymService {
         copy = curr.slice();
         copy.push(args[0][i]);
 
-        if (last) {
+        if (last || result.length >= lim) {
           result.push(copy);
 
         } else {
