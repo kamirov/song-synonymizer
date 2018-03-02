@@ -167,12 +167,7 @@ class SynonymService {
       if (!token.state.tags.includes('Auxiliary')) {
         let possibleName;
         if (token.state.tags.includes('PastTense')) {
-          // ugh, edge case
-          if (name === 'is') {
-            possibleName = was;
-          } else {
             possibleName = nlp(name).tag('Verb').verbs(0).toPastTense().out();
-          }
         // } else if (token.state.tags.includes('PresentTense')) {
         //   possibleName = nlp(name).verbs(0).toPresentTense().out();
         } else if (token.state.tags.includes('FutureTense')) {
