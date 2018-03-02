@@ -104,7 +104,6 @@ class SynonymService {
       // Tokenize, normalize, invalidate
       let tokens = this._termService.createNormalizedTokens(line);
 
-      return tokens;
       // return tokens;
 
       let tokensWithValidation = this._markupIgnoredTokens(tokens);
@@ -128,8 +127,8 @@ class SynonymService {
 
     });
 
-    return await Promise.all(linesPromises);
-    // return (await Promise.all(linesPromises)).join('\n');
+    // return await Promise.all(linesPromises);
+    return (await Promise.all(linesPromises)).join('\n');
   }
 
   _correctTermNames(termNames) {
