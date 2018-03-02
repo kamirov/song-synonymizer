@@ -170,10 +170,11 @@ class TermService {
       normalizedTerm = normalizedTerm.replace(/\W+$/, '')
 
       // Handle title case edge cases (nlp lib doesn't capture single letter title cases, and ones with prefixes)
-      if (!token.tags.includes('TitleCase')
-          && (this.isTitleCase(token.text) || this.isTitleCase(token.text.replace(/^\W+/, '')))
-         ) {
-        token.tags.push('TitleCase')
+      if (token.text) {
+        if (!token.tags.includes('TitleCase') && (this.isTitleCase(token.text) || this.isTitleCase(token.text.replace(/^\W+/, '')))
+          ) {
+          token.tags.push('TitleCase')
+        }
       }
 
       // Get likely part of speech (assume it's the first common POS in the tags list)
@@ -211,6 +212,7 @@ class TermService {
           || token.tags.includes('Auxiliary')) {
         normalizedTerm = token.text;
       }
+  
 
       return {
         name: normalizedTerm,
