@@ -15,7 +15,7 @@ const flagDetails = {
         preserveLineSyllableCount: {
             label: "Preserve line syllables",
             disabled: false,
-            tooltip: "Very experimental. If set, will only include synonyms, regardless of what is set."
+            tooltip: "Very experimental. I may have not made myself clear. VERY EXPERIMENTAL."
         },
         preserveLineRhyme: {
             label: "Preserve line rhyme",
