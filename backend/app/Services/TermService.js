@@ -184,7 +184,12 @@ class TermService {
 
       // Singularize
       if (token.tags.includes('Plural')) {
-        normalizedTerm = nlp(normalizedTerm).nouns().toSingular().out('text');
+        // Some edge cases
+        if (normalizedTerm === 'we') {
+          normalizedTerm = 'i'
+        } else {
+          normalizedTerm = nlp(normalizedTerm).nouns(0).toSingular().out('text');
+        }
       }
 
       // If contraction or aux, don't normalize (causes some bugs during synonymization)

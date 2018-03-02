@@ -14,7 +14,7 @@ class SynonymService {
   static get DEFAULT_FLAGS() {
     return {
       preserveTermSyllableCount: false,
-      preserveLineSyllableCount: true,
+      preserveLineSyllableCount: false,
       preserveTermRhyme: false,
       preserveLineRhyme: false,
 
@@ -74,8 +74,20 @@ class SynonymService {
 
 
   setFlags(flags) {
-    // TODO: function should check to make sure only allowable flags are set
     this._flags = Object.assign({}, SynonymService.DEFAULT_FLAGS, flags);
+
+    // Special case to prevent heap memory limit exceeded
+    if (this._flags.preserveLineSyllableCount) {
+      this._flags = Object.assign({}, this._flags, {
+        includeSynonyms: true,
+        includeAntonyms: false,
+        includeHypernyms: false,
+        includeHyponyms: false,
+        includeHolonyms: false,
+        includeMeronyms: false,
+        includeSimilars: false
+      })
+    }
   }
 
   /**
@@ -90,6 +102,8 @@ class SynonymService {
 
       // Tokenize, normalize, invalidate
       let tokens = this._termService.createNormalizedTokens(line);
+
+      // return tokens;
 
       let tokensWithValidation = this._markupIgnoredTokens(tokens);
 
@@ -112,8 +126,8 @@ class SynonymService {
 
     });
 
-    // return await Promise.all(linesPromises);
-    return (await Promise.all(linesPromises)).join('\n');
+    return await Promise.all(linesPromises);
+    // return (await Promise.all(linesPromises)).join('\n');
   }
 
   _correctTermNames(termNames) {
