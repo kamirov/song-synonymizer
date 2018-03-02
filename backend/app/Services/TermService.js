@@ -146,6 +146,11 @@ class TermService {
     return nlp(text).out('terms')
     .map((token, tokenIdx) => {
 
+      // Add empty tag to empty words
+      if (!token.tags.length) {
+        token.tags.push('Fake');
+      }
+
       // Get token affixes
       let prefix = token.text.match(/^\W+/);
       let suffix = token.text.match(/\W+$/);
@@ -166,6 +171,7 @@ class TermService {
 
       // Get likely part of speech (assume it's the first common POS in the tags list)
       const mainPartsOfSpeech = ['Noun', 'Verb', 'Adverb', 'Preposition', 'Conjunction'];
+      console.log(token.name, token.tags);
       let partOfSpeech = token.tags[0].toLowerCase();
       for (let i = 0; i < token.tags.length; i++) {
         if (mainPartsOfSpeech.includes(token.tags[i])) {
