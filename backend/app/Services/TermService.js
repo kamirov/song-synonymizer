@@ -187,8 +187,9 @@ class TermService {
         normalizedTerm = nlp(normalizedTerm).nouns().toSingular().out('text');
       }
 
-      // If contraction, don't normalize (causes some bugs during synonymization)
-      if (token.tags.includes('Contraction')) {
+      // If contraction or aux, don't normalize (causes some bugs during synonymization)
+      if (token.tags.includes('Contraction')
+          || token.tags.includes('Auxiliary')) {
         normalizedTerm = token.text;
       }
 

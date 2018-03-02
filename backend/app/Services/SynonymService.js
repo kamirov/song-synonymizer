@@ -14,7 +14,7 @@ class SynonymService {
   static get DEFAULT_FLAGS() {
     return {
       preserveTermSyllableCount: false,
-      preserveLineSyllableCount: false,
+      preserveLineSyllableCount: true,
       preserveTermRhyme: false,
       preserveLineRhyme: false,
 
@@ -131,7 +131,7 @@ class SynonymService {
   async _denormalizeTokens(tokens) {
     return tokens.map(token => {
 
-      console.log(token.state);
+      // console.log(token.state);
       let name = token.synonymization;
 
       if (token.state.tags.includes('Plural')) {
@@ -147,8 +147,19 @@ class SynonymService {
         name = name.toUpperCase();
       }
 
-      // TODO: denormalize verbs
-      // if (token.state.tags.includes(''))
+      // Conjugations
+      if (!token.state.tags.includes('Auxiliary')) {
+        let possibleName;
+        if (token.state.tags.includes('PastTense')) {
+          possibleName = nlp(name).verbs(0).toPastTense().out();
+        // } else if (token.state.tags.includes('PresentTense')) {
+        //   possibleName = nlp(name).verbs(0).toPresentTense().out();
+        } else if (token.state.tags.includes('FutureTense')) {
+          possibleName = nlp(name).verbs(0).toFutureTense().out();
+        }
+        name = possibleName || name;
+
+      }
 
       if (token.state.prefix) {
         name = token.state.prefix + token.name;
@@ -172,9 +183,58 @@ class SynonymService {
       }, 0);
       console.log('originalSyllableCount', originalSyllableCount)
 
-      // Get all synonym groupings that meet the syllable count
+      // Get all combinations of replacements' indices
+      let replacementIndices = tokens.map(token => {
+        // console.log('token.name', token.name)
+        if (token.replacements.length)
+          return Array.from(Array(token.replacements.length).keys())
+        return [0]
+      })
+      let allReplacementIndicesSets = this._getCartesianProduct(...replacementIndices);
 
-      // TODO
+      // Get all synonym groupings that meet the syllable count
+      let synonymGroupings = [];
+      allReplacementIndicesSets.forEach(replacementIndicesSet => {
+        let synonymGrouping = [];
+        for (let i = 0; i < tokens.length; i++) {
+
+          // If no replacements, create a fake one based on the real word
+          if (tokens[i].replacements.length) {
+            synonymGrouping.push(tokens[i].replacements[replacementIndicesSet[i]]);
+          } else {
+            let fakeReplacement = {
+              name: tokens[i].name,
+              syllablesCount: tokens[i].syllablesCount
+            }
+
+            synonymGrouping.push(fakeReplacement);
+          }
+
+        }
+
+        // Compare syllable count
+        let syllablesCount = synonymGrouping.reduce((runningCount, replacement) => {
+          return runningCount + replacement.syllablesCount;
+        }, 0);
+        console.log(syllablesCount, originalSyllableCount);
+
+        if (syllablesCount === originalSyllableCount) {
+          synonymGroupings.push(synonymGrouping);
+        }
+      });
+
+      console.log(synonymGroupings);
+
+      // Take a random synonym grouping
+      let synonymGrouping = this._getRandomArrayElement(synonymGroupings);
+      return tokens.map((token, tokenIdx) => {
+        let synonymization = synonymGrouping[tokenIdx].name;
+        return {
+          ...token,
+          synonymization: synonymization,
+        }
+      })
+
 
     } else {
       return tokens.map((token, tokenIdx) => {
@@ -190,22 +250,6 @@ class SynonymService {
           synonymization: synonymization,
         }
       })
-
-      // token.synonymization =
-      //
-      // // Easy mode
-      // replacements = termsWithSynonyms.map(term => {
-      //   if (!term.isDisqualified) {
-      //     term = term.toJSON();
-      //   }
-      //   if (term.synonyms && term.synonyms.length) {
-      //     let options = term.synonyms.slice();
-      //     options.push({ name: term.name });
-      //     return this._getRandomArrayElement(options).name;
-      //   } else {
-      //     return term.name;
-      //   }
-      // })
     }
 
 
@@ -316,6 +360,35 @@ class SynonymService {
     return replacements;
   }
 
+  _getCartesianProduct(paramArray) {
+
+    function addTo(curr, args) {
+
+      var i, copy,
+        rest = args.slice(1),
+        last = !rest.length,
+        result = [];
+
+      for (i = 0; i < args[0].length; i++) {
+
+        copy = curr.slice();
+        copy.push(args[0][i]);
+
+        if (last) {
+          result.push(copy);
+
+        } else {
+          result = result.concat(addTo(copy, rest));
+        }
+      }
+
+      return result;
+    }
+
+
+    return addTo([], Array.prototype.slice.call(arguments));
+  }
+
   _getRandomArrayElement(array) {
     // TODO: Should move to an array helper class
     return array[Math.floor(Math.random()*array.length)];
@@ -344,7 +417,7 @@ class SynonymService {
 
     let relationsFilter = builder => {
 
-      console.log(this._flags);
+      // console.log(this._flags);
 
       // Kinds check
       let allowableKinds = [];
@@ -370,13 +443,10 @@ class SynonymService {
         allowableKinds = allowableKinds.concat(TermRelation.SIMILAR_KINDS);
       }
 
-      console.log('allowableKinds', allowableKinds)
-
       // console.log('allowableKinds', allowableKinds);
       builder.whereIn('kind', allowableKinds);
 
-      if (this._flags.preserveTermSyllableCount
-        || (this._flags.preserveLineSyllableCount && isLastTerm)) {
+      if (this._flags.preserveTermSyllableCount) {
         // TODO: Feels like there's a way to do this without a subquery
         let subquery = Database.select('syllablesCount')
           .from('terms')
@@ -397,7 +467,7 @@ class SynonymService {
           .where('name', token.name)
           .limit(1);
 
-        console.log('token', token.name, token.partOfSpeech, count);
+        // console.log('token', token.name, token.partOfSpeech, count);
 
         if (count) {
           subquery.where('partOfSpeech', token.partOfSpeech);
