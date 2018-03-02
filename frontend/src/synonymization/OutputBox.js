@@ -1,5 +1,5 @@
 import React from 'react';
-import {withStyles} from 'material-ui/styles';
+import { withStyles } from 'material-ui/styles';
 import apiConstants from "../api/apiConstants";
 import Progress from "./Progress";
 import Paper from 'material-ui/Paper';
@@ -28,7 +28,7 @@ const styles = theme => ({
     }
 });
 
-const OutputBox = ({content, apiStatus, newWords, classes}) => {
+const OutputBox = ({content, apiStatus, newTerms, classes}) => {
 
     // if (!content) {
     //     return <div />
@@ -44,15 +44,15 @@ const OutputBox = ({content, apiStatus, newWords, classes}) => {
             </Typography>;
 
             let paperFooter;
-            if (newWords.length) {
+            if (newTerms.length) {
                 let newWordMessage
-                if (newWords.length === 1) {
-                    newWordMessage = `Hey you just taught me a new word! Thanks to you I know "${newWords[0]}"`
+                if (newTerms.length === 1) {
+                    newWordMessage = `Hey you just taught me a new word! Thanks to you I know "${newTerms[0]}"`
                 } else {
                     newWordMessage = <span>
                         {"Thanks! You just taught me some new words: "}
 
-                        {newWords.join(', ')}
+                        {newTerms.join(', ')}
                     </span>
                 }
                 paperFooter = <Typography className={classes.footer}>

@@ -1,19 +1,20 @@
 import store from '../app/store';
-import {setApiStatus} from "./apiActions";
+import { setApiStatus } from "./apiActions";
 import apiConstants from "./apiConstants";
-import {setNewWords} from "../newWords/newWordsActions";
-import {setSynonymizedText} from "../synonymization/synonymizationActions";
-import {setMessage, setOpen} from "../message/messageActions";
+import { setnewTerms } from "../newTerms/newTermsActions";
+import { setSynonymizedText } from "../synonymization/synonymizationActions";
+import { setMessage, setOpen } from "../message/messageActions";
 
 // TODO: This SHOULD be decoupled from Redux, or at least from the app state. Better for us to manually pass the related state variables
 class ApiService {
 
     static get ENDPOINTS() {
-        const BASE_PATH = process.env.REACT_APP_API;
+        // const BASE_PATH = process.env.REACT_APP_API;
+        const BASE_PATH = 'http://localhost:3000'
 
         return {
             SYNONYMIZE: `${BASE_PATH}/synonymize`,
-            ADD_NEW_WORDS: `${BASE_PATH}/words/add-new`
+            ADD_NEW_WORDS: `${BASE_PATH}/terms/add-new`
         }
     }
 
@@ -49,7 +50,7 @@ class ApiService {
         store.dispatch(setMessage(apiConstants.MESSAGES.FETCHING[0]));
 
         try {
-            let addingWordsSucceeded = await this._addNewWords();
+            let addingWordsSucceeded = await this._addnewTerms();
             if (addingWordsSucceeded) {
                 let rawResponse = await fetch(
                     ApiService.ENDPOINTS.SYNONYMIZE, {
@@ -78,7 +79,7 @@ class ApiService {
 
     }
 
-    async _addNewWords() {
+    async _addnewTerms() {
         let rawResponse = await fetch(
             ApiService.ENDPOINTS.ADD_NEW_WORDS, {
                 ...ApiService.REQUEST_POST_CONFIG,
@@ -90,7 +91,7 @@ class ApiService {
         let response = await rawResponse.json();
 
         if (rawResponse.status === 200) {
-            store.dispatch(setNewWords(response.newWords));
+            store.dispatch(setnewTerms(response.newTerms));
             return true;
         } else if (rawResponse.status === 500) {
             // TODO: Oh so dirty. Should send a key, but I'm at the tail end and just want to publish this already

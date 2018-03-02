@@ -112,8 +112,8 @@ class SynonymService {
 
     });
 
-    return await Promise.all(linesPromises);
-    // return (await Promise.all(linesPromises)).join('\n');
+    // return await Promise.all(linesPromises);
+    return (await Promise.all(linesPromises)).join('\n');
   }
 
   _correctTermNames(termNames) {

@@ -8,7 +8,7 @@
         open: <bool>,
         content: <string>
     }
-    newWords: <string[]>
+    newTerms: <string[]>
     flags: {
         preserveWordSyllableCount: <bool>,
         preserveLineSyllableCount: <bool>,

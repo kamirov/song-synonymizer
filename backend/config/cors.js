@@ -18,7 +18,7 @@ module.exports = {
   | Function - Receives the current origin and should return one of the above values.
   |
   */
-  origin: [process.env.FRONTEND_ORIGIN],
+  origin: [process.env.FRONTEND_ORIGIN, 'http://localhost:3001'],
 
   /*
   |--------------------------------------------------------------------------
