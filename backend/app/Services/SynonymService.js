@@ -119,8 +119,11 @@ class SynonymService {
   _correctTermNames(termNames) {
     let correctedTermNames = termNames.slice();
 
-    // For now just the articles (maybe add more corrections later)
+    // Article issues
     correctedTermNames = this._correctArticles(correctedTermNames);
+
+    // Specific phrases
+    correctedTermNames = this._correctPhrases(correctedTermNames);
 
     return correctedTermNames;
   }
@@ -214,8 +217,8 @@ class SynonymService {
 
       let isLast = tokenIdx === (tokens.length-1);
 
-      console.log('-----------');
-      console.log(token);
+      // console.log('-----------');
+      // console.log(token);
 
       let termWithSynonyms = (await this._getTermAndSynonyms(token, isLast)).toJSON();
 
@@ -293,7 +296,7 @@ class SynonymService {
 
         let {sanitizedToken, tokenState} = this._sanitizeToken(token);
 
-        console.log(token, sanitizedToken, tokenState);
+        // console.log(token, sanitizedToken, tokenState);
 
         // TODO: Don't like this repetition
         if (this._termService.isIgnoredTerm(sanitizedToken)
@@ -326,6 +329,21 @@ class SynonymService {
 
     // return await Promise.all(linesPromises);
     return (await Promise.all(linesPromises)).join('\n');
+  }
+
+  _correctPhrases(replacements) {
+    const possessivePronouns = ['my', 'your', 'his', 'her', 'our', 'their'];
+    const needOfIfPreceedingPronounWords = ['all', 'some', 'last', 'each', 'every'];
+
+      for (let i = 0; i < replacements.length-1; i++) {
+        // All fix
+        if (needOfIfPreceedingPronounWords.includes(replacements[i])
+            && possessivePronouns.includes(replacements[i + 1])) {
+          replacements[i] += ' of';
+        }
+      }
+
+    return replacements;
   }
 
   _correctArticles(replacements) {
@@ -438,6 +456,8 @@ class SynonymService {
 
     let relationsFilter = builder => {
 
+      console.log(this._flags);
+
       // Kinds check
       let allowableKinds = [];
       if (this._flags.includeSynonyms) {
@@ -462,21 +482,23 @@ class SynonymService {
         allowableKinds = allowableKinds.concat(TermRelation.SIMILAR_KINDS);
       }
 
+      console.log('allowableKinds', allowableKinds)
+
       // console.log('allowableKinds', allowableKinds);
-      builder.whereInPivot('kind', allowableKinds);
+      builder.whereIn('kind', allowableKinds);
 
       if (this._flags.preserveTermSyllableCount
         || (this._flags.preserveLineSyllableCount && isLastTerm)) {
         // TODO: Feels like there's a way to do this without a subquery
         let subquery = Database.select('syllablesCount')
           .from('terms')
-          .where('name', token.name
-          );
+          .where('name', token.name)
+          .limit(1);
 
         if (count) {
           subquery.where('partOfSpeech', token.partOfSpeech);
         }
-        builder.where('syllablesCount', subquery)
+        builder.where('syllablesCount', subquery).limit(1)
       }
 
       if (this._flags.preserveTermRhyme
@@ -484,7 +506,10 @@ class SynonymService {
         // TODO: Feels like there's a way to do this without a subquery
         let subquery = Database.select('ultima')
           .from('terms')
-          .where('name', token.name);
+          .where('name', token.name)
+          .limit(1);
+
+        console.log('token', token.name, token.partOfSpeech, count);
 
         if (count) {
           subquery.where('partOfSpeech', token.partOfSpeech);

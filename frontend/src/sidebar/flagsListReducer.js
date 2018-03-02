@@ -1,8 +1,16 @@
 const initialState = {
-    preserveWordRhyme: false,
-    preserveWordSyllableCount: false,
+    preserveTermRhyme: false,
+    preserveTermSyllableCount: false,
     preserveLineRhyme: false,
-    preserveLineSyllableCount: false
+    preserveLineSyllableCount: false,
+
+    includeSynonyms: true,
+    includeAntonyms: true,
+    includeHypernyms: true,
+    includeHyponyms: true,
+    includeHolonyms: true,
+    includeMeronyms: true,
+    includeSimilars: true,
 }
 
 const flagsList = (state = initialState, action) => {

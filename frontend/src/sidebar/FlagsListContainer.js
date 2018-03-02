@@ -3,18 +3,18 @@ import { toggleFlag } from './flagsListActions';
 import FlagsList from "./FlagsList";
 
 const flagDetails = {
-    preserveWordSyllableCount: {
+    preserveTermSyllableCount: {
         label: "Preserve word syllables",
         disabled: false
     },
-    preserveWordRhyme: {
+    preserveTermRhyme: {
         label: "Preserve word rhyme",
         disabled: false
     },
     preserveLineSyllableCount: {
         label: "Preserve line syllables",
         disabled: false,
-        tooltip: "Currently disabled. Need to do some more tinkering with this one."
+        tooltip: "Very experimental"
     },
     preserveLineRhyme: {
         label: "Preserve line rhyme",
