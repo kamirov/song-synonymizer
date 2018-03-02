@@ -34,7 +34,7 @@ class TermStorageService {
   // Private methods
 
   async _addTermIfNewWithRelations(name) {
-    let term = await Term.findBy('name', name).first();
+    let term = await Term.findBy('name', name);
 
     if (!term) {
       await this._addNewTerm(name, true);
@@ -122,8 +122,6 @@ class TermStorageService {
     this.newTerms.push(name);
 
     if (externalTerm) {
-      // console.log('externalTerm', exte
-      // rnalTerm)
       // We could have multiple pos, which we treat as separate terms
       for (let pos in externalTerm) {
         let termParams = {
@@ -133,7 +131,21 @@ class TermStorageService {
           ultima: externalTerm[pos].ultima,
           relationsQueried: shouldAddRelations
         };
-        let mainTerm = await Term.create(termParams);
+
+        let mainTerm = await Term.query().where({
+          name: name,
+          partOfSpeech: pos
+        }).first();
+
+        // This feels wrong
+        if (mainTerm) {
+          if (shouldAddRelations && !mainTerm.relationsQueried) {
+            mainTerm.relationsQueried = true;
+            await mainTerm.save();  
+          }
+        } else {
+          mainTerm = await Term.create(termParams);
+        }
 
         if (shouldAddRelations) {
 
@@ -172,11 +184,7 @@ class TermStorageService {
       let termParams = TermService.EMPTY_TERM_PARAMS;
       termParams.name = name;
       termParams.syllablesCount = syllable(name); // TODO: This should be done in the external service (or otherwise in some middle service)
-      try {
-        await Term.create(termParams);
-      } catch(e) {
-        Logger.error('Error creating term: ' + termParams.name);
-      }
+      await Term.create(termParams);
     }
   }
 
