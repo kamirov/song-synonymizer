@@ -369,11 +369,19 @@ class SynonymService {
           replacements[i] += ' of';
         }
 
+        // TODO: Should convert these if statements to a hashmap
+
         // NLP engine doesn't pick this up for some reason
         if (replacements[i] === 'i') {
           replacements[i] = 'I';
         }
+
+        if (replacements[i] === 'get together' && replacements[i+1] !== 'with') {
+          replacements[i] = 'get together with';
+        }
       }
+
+
 
     return replacements;
   }
