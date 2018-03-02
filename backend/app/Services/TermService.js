@@ -169,6 +169,13 @@ class TermService {
       normalizedTerm = normalizedTerm.replace(/^\W+/, '')
       normalizedTerm = normalizedTerm.replace(/\W+$/, '')
 
+      // Handle title case edge cases (nlp lib doesn't capture single letter title cases, and ones with prefixes)
+      if (!token.tags.includes('TitleCase')
+          && (this.isTitleCase(token.text) || this.isTitleCase(token.text.replace(/^\W+/, '')))
+         ) {
+        token.tags.push('TitleCase')
+      }
+
       // Get likely part of speech (assume it's the first common POS in the tags list)
       const mainPartsOfSpeech = ['Noun', 'Verb', 'Adverb', 'Preposition', 'Conjunction'];
       console.log(token.name, token.tags);
@@ -262,6 +269,14 @@ class TermService {
     });
 
     return result;
+  }
+
+  isUpperCase(letter) {
+    return letter === letter.toUpperCase();
+  }
+
+  isTitleCase(word) {
+    return this.isUpperCase(word[0]);
   }
 
 }
