@@ -1,5 +1,5 @@
-import React, {Component} from 'react';
-import {Grid} from 'material-ui';
+import React, { Component } from 'react';
+import { Grid } from 'material-ui';
 
 import SidebarContainer from '../sidebar/SidebarContainer';
 import InputBoxContainer from '../synonymization/InputBoxContainer';
@@ -17,7 +17,7 @@ class App extends Component {
                     <Grid container spacing={24}>
                         <Grid item xs={12} >
                             <Grid container>
-                                <Grid item xs={12} sm={4} md={3} lg={2} xl={1}>
+                                <Grid item xs={12} sm={4} md={4} lg={3} xl={2}>
                                     <SidebarContainer />
                                 </Grid>
                                 <Grid item xs={12} sm={8} md={6} lg={5} xl={3}>
