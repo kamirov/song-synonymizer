@@ -104,6 +104,7 @@ class SynonymService {
       // Tokenize, normalize, invalidate
       let tokens = this._termService.createNormalizedTokens(line);
 
+      return tokens;
       // return tokens;
 
       let tokensWithValidation = this._markupIgnoredTokens(tokens);
@@ -127,8 +128,8 @@ class SynonymService {
 
     });
 
-    // return await Promise.all(linesPromises);
-    return (await Promise.all(linesPromises)).join('\n');
+    return await Promise.all(linesPromises);
+    // return (await Promise.all(linesPromises)).join('\n');
   }
 
   _correctTermNames(termNames) {
@@ -345,6 +346,9 @@ class SynonymService {
 
     if (tags.filter(tag => ignoredTags.includes(tag)).length
         || this._termService.isIgnoredTerm(term)
+        || this._termService.isPreposition(term)
+        || this._isArticle(term)
+        || this._isConjunction(term)
         || term.length < SynonymService.MIN_LETTER_COUNT_TO_SYNONYMIZE) {
       return true;
     }
