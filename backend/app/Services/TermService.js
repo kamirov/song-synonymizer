@@ -96,6 +96,7 @@ class TermService {
       // Terms that tend to synonymize poorly
       // TODO: Should probably put these in a DB table
       "need", "twenty", "have", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+      "only", "just",
 
       // Miscellaneous
       "m'am", "ma'am"
