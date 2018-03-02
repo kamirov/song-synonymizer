@@ -346,8 +346,8 @@ class SynonymService {
     if (tags.filter(tag => ignoredTags.includes(tag)).length
         || this._termService.isIgnoredTerm(term)
         || this._termService.isPreposition(term)
-        || this._isArticle(term)
-        || this._isConjunction(term)
+        || this._termService.isArticle(term)
+        || this._termService.isConjunction(term)
         || term.length < SynonymService.MIN_LETTER_COUNT_TO_SYNONYMIZE) {
       return true;
     }
