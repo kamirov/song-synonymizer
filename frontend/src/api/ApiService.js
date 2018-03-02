@@ -9,8 +9,8 @@ import { setMessage, setOpen } from "../message/messageActions";
 class ApiService {
 
     static get ENDPOINTS() {
-        // const BASE_PATH = process.env.REACT_APP_API;
-        const BASE_PATH = 'http://localhost:3000'
+        const BASE_PATH = process.env.REACT_APP_API;
+        // const BASE_PATH = 'http://localhost:3000'
 
         return {
             SYNONYMIZE: `${BASE_PATH}/synonymize`,
