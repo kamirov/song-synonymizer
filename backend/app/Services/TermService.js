@@ -179,7 +179,7 @@ class TermService {
 
       // Get likely part of speech (assume it's the first common POS in the tags list)
       const mainPartsOfSpeech = ['Noun', 'Verb', 'Adverb', 'Preposition', 'Conjunction'];
-      console.log(token.name, token.tags);
+      // console.log(token.name, token.tags);
       let partOfSpeech = token.tags[0].toLowerCase();
       for (let i = 0; i < token.tags.length; i++) {
         if (mainPartsOfSpeech.includes(token.tags[i])) {

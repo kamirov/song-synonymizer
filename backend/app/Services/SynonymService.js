@@ -14,18 +14,18 @@ class SynonymService {
   static get DEFAULT_FLAGS() {
     return {
       preserveTermSyllableCount: false,
-      preserveLineSyllableCount: false,
+      preserveLineSyllableCount: true,
       preserveTermRhyme: false,
       preserveLineRhyme: false,
 
       includeOriginals: true,
       includeSynonyms: true,
       includeAntonyms: true,
-      includeHypernyms: true,
-      includeHyponyms: true,
-      includeHolonyms: true,
-      includeMeronyms: true,
-      includeSimilars: true,
+      includeHypernyms: false,
+      includeHyponyms: false,
+      includeHolonyms: false,
+      includeMeronyms: false,
+      includeSimilars: false,
 
       // Deprecated
       preservePronouns: true,
@@ -76,19 +76,6 @@ class SynonymService {
 
   setFlags(flags) {
     this._flags = Object.assign({}, SynonymService.DEFAULT_FLAGS, flags);
-
-    // Special case to prevent heap memory limit exceeded
-    if (this._flags.preserveLineSyllableCount) {
-      this._flags = Object.assign({}, this._flags, {
-        includeSynonyms: true,
-        includeAntonyms: false,
-        includeHypernyms: false,
-        includeHyponyms: false,
-        includeHolonyms: false,
-        includeMeronyms: false,
-        includeSimilars: false
-      })
-    }
   }
 
   /**
@@ -115,7 +102,7 @@ class SynonymService {
       // Denormalize
       let denormalizedTermNames = await this._denormalizeTokens(tokensWithSynonymization);
 
-      // return denormalizedTermNames;
+      return denormalizedTermNames;
 
       // Correct
       let correctedNames = this._correctTermNames(denormalizedTermNames);
@@ -127,7 +114,7 @@ class SynonymService {
 
     });
 
-    // return await Promise.all(linesPromises);
+    return await Promise.all(linesPromises);
     return (await Promise.all(linesPromises)).join('\n');
   }
 
@@ -148,6 +135,7 @@ class SynonymService {
 
       // console.log(token.state);
       let name = token.synonymization;
+      // console.log(token);
       
       if (token.state.tags.includes('Plural')) {
         // Can probably do this with the NLP package as well
@@ -175,7 +163,7 @@ class SynonymService {
         } else {
           name = name[0].toUpperCase()
         }
-        console.log(name, token.state.tags);
+        // console.log(name, token.state.tags);
       }
 
       if (token.state.tags.includes('Acronym')) {
@@ -202,32 +190,43 @@ class SynonymService {
       let originalSyllableCount = tokens.reduce((runningCount, token) => {
         return runningCount + token.syllablesCount;
       }, 0);
-      console.log('originalSyllableCount', originalSyllableCount)
+      // console.log('originalSyllableCount', originalSyllableCount)
 
       // Get all combinations of replacements' indices
       let replacementIndices = tokens.map(token => {
         // console.log('token.name', token.name)
         if (token.replacements.length)
           return Array.from(Array(token.replacements.length).keys())
-        return [0]
+        return [0]    // No replacements case (we handle this later on)
       })
-      let allReplacementIndicesSets = this._getCartesianProduct(...replacementIndices);
 
-      console.log('a');
+      // Randomize replacement indices
+      replacementIndices = replacementIndices.map(replacementIndicesItem => {
+        return this._shuffleArray(replacementIndicesItem);
+      })
+
+      console.log(replacementIndices);
+      let allReplacementIndicesSets = this._getCartesianProduct(...replacementIndices);
 
       // Get all synonym groupings that meet the syllable count
       let synonymGroupings = [];
       allReplacementIndicesSets.forEach(replacementIndicesSet => {
+        // console.log('replacementIndicesSet', replacementIndicesSet);
         let synonymGrouping = [];
         for (let i = 0; i < tokens.length; i++) {
 
           // If no replacements, create a fake one based on the real word
           if (tokens[i].replacements.length) {
+            // console.log('a', i, replacementIndicesSet, replacementIndicesSet[i]);
+            // console.log(tokens[i].replacements[replacementIndicesSet[i]])
+            // console.log(tokens[i].replacements[replacementIndicesSet[i]]);
             synonymGrouping.push(tokens[i].replacements[replacementIndicesSet[i]]);
           } else {
             let fakeReplacement = {
               name: tokens[i].name,
-              syllablesCount: tokens[i].syllablesCount
+              syllablesCount: tokens[i].syllablesCount,
+              ultima: tokens[i].ultima,
+              partOfSpeech: tokens[i].partOfSpeech
             }
 
             synonymGrouping.push(fakeReplacement);
@@ -240,26 +239,36 @@ class SynonymService {
           return runningCount + replacement.syllablesCount;
         }, 0);
 
-        console.log(syllablesCount, originalSyllableCount);
+        // console.log(syllablesCount, originalSyllableCount);
 
         if (syllablesCount === originalSyllableCount) {
           synonymGroupings.push(synonymGrouping);
         }
       });
 
+      // If we don't have any viable syn groupings, we just use the originals
+      let synonymGrouping;
+      if (synonymGroupings.length) {
+        synonymGrouping = this._getRandomArrayElement(synonymGroupings);
+      } else {
+        synonymGrouping = tokens.map(token => {
+          return {
+            name: token.name,
+            syllablesCount: token.syllablesCount,
+            ultima: token.ultima,
+            partOfSpeech: token.partOfSpeech
+          }
+        })
+      }
+
       // Take a random synonym grouping
-      let synonymGrouping = this._getRandomArrayElement(synonymGroupings);
-      return tokens.map(async (token, tokenIdx) => {
-        console.log('synonymGrouping', synonymGrouping);
-        console.log('tokenIdx', tokenIdx);
-        console.log('synonymGroupingIdx', await synonymGrouping[tokenIdx]);
+      return tokens.map((token, tokenIdx) => {
         let synonymization = synonymGrouping[tokenIdx].name;
         return {
           ...token,
           synonymization: synonymization,
         }
       })
-
 
     } else {
       return tokens.map((token, tokenIdx) => {
@@ -405,9 +414,12 @@ class SynonymService {
   }
 
   _getCartesianProduct(paramArray) {
-    let lim = 100;
+    let maxIterations = 1000;
+    let currentIteration = 0;
 
     function addTo(curr, args) {
+      currentIteration++;
+      // console.log('cur', curr, args);
 
       var i, copy,
         rest = args.slice(1),
@@ -419,11 +431,13 @@ class SynonymService {
         copy = curr.slice();
         copy.push(args[0][i]);
 
-        if (last || result.length >= lim) {
+        if (last) {
           result.push(copy);
-
         } else {
-          result = result.concat(addTo(copy, rest));
+          // console.log(currentIteration);
+          if (currentIteration <= maxIterations) {
+            result = result.concat(addTo(copy, rest));            
+          }
         }
       }
 
@@ -439,6 +453,14 @@ class SynonymService {
     return array[Math.floor(Math.random()*array.length)];
   }
 
+  _shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+
+    return array;
+  }
 
   async _getTermAndSynonyms(token, isLastTerm) {
 
