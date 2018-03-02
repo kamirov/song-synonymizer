@@ -23,6 +23,11 @@ const flagDetails = {
         },
     },
     word: {
+        includeOriginals: {
+            label: "Include originals",
+            disabled: false,
+            tooltip: "The original, unmodified words"
+        },
         includeSynonyms: {
             label: "Include synonyms",
             disabled: false,

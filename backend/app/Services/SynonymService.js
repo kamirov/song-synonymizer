@@ -18,6 +18,7 @@ class SynonymService {
       preserveTermRhyme: false,
       preserveLineRhyme: false,
 
+      includeOriginals: true,
       includeSynonyms: true,
       includeAntonyms: true,
       includeHypernyms: true,
@@ -294,12 +295,20 @@ class SynonymService {
       token.ultima = termWithSynonyms.ultima;
 
       token.replacements = termWithSynonyms.relations.map(replacement => ({
-        name: replacement.
-          name,
+        name: replacement.name,
         syllablesCount: replacement.syllablesCount,
         ultima: replacement.ultima,
         partOfSpeech: replacement.partOfSpeech
       }))
+
+      if (this._flags.includeOriginals) {
+        token.replacements.push({
+          name: token.name,
+          syllablesCount: token.syllablesCount,
+          ultima: token.ultima,
+          partOfSpeech: token.partOfSpeech
+        })
+      }
     });
 
     await Promise.all(synonymPromises);

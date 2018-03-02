@@ -4,6 +4,7 @@ const initialState = {
     preserveLineRhyme: false,
     preserveLineSyllableCount: false,
 
+    includeOriginals: true,
     includeSynonyms: true,
     includeAntonyms: true,
     includeHypernyms: true,
