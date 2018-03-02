@@ -14,7 +14,7 @@ class SynonymService {
   static get DEFAULT_FLAGS() {
     return {
       preserveTermSyllableCount: false,
-      preserveLineSyllableCount: true,
+      preserveLineSyllableCount: false,
       preserveTermRhyme: false,
       preserveLineRhyme: false,
 
@@ -209,7 +209,7 @@ class SynonymService {
       let allReplacementIndicesSets = this._getCartesianProduct(...replacementIndices);
 
       console.log('a');
-      
+
       // Get all synonym groupings that meet the syllable count
       let synonymGroupings = [];
       allReplacementIndicesSets.forEach(replacementIndicesSet => {

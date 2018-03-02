@@ -130,7 +130,7 @@ class TermStorageService {
           ultima: externalTerm[pos].ultima,
           relationsQueried: shouldAddRelations
         };
-        let mainTerm = await Term.create(termParams);
+        let mainTerm = await Term.findOrCreate(termParams);
 
         if (shouldAddRelations) {
 
@@ -169,7 +169,7 @@ class TermStorageService {
       let termParams = TermService.EMPTY_TERM_PARAMS;
       termParams.name = name;
       termParams.syllablesCount = syllable(name); // TODO: This should be done in the external service (or otherwise in some middle service)
-      await Term.create(termParams);
+      await Term.findOrCreate(termParams);
     }
   }
 
