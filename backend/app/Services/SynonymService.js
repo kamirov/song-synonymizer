@@ -167,11 +167,11 @@ class SynonymService {
       if (!token.state.tags.includes('Auxiliary')) {
         let possibleName;
         if (token.state.tags.includes('PastTense')) {
-          possibleName = nlp(name).verbs(0).toPastTense().out();
+          possibleName = nlp(name).tag('Verb').verbs(0).toPastTense().out();
         // } else if (token.state.tags.includes('PresentTense')) {
         //   possibleName = nlp(name).verbs(0).toPresentTense().out();
         } else if (token.state.tags.includes('FutureTense')) {
-          possibleName = nlp(name).verbs(0).toFutureTense().out();
+          possibleName = nlp(name).tag('Verb').verbs(0).toFutureTense().out();
         }
         name = possibleName || name;
 
