@@ -93,24 +93,22 @@ class SynonymService {
     let tokensWithSynonymization = await this._addSynonymization(tokensWithRelations);
 
     // Denormalize
-    let denormalizedTermNames = this._denormalizeTokens(tokensWithSynonymization);
-
-    return denormalizedTermNames;
+    let denormalizedTermNames = await this._denormalizeTokens(tokensWithSynonymization);
 
     // Correct
     let correctedNames = this._correctTermNames(denormalizedTermNames);
 
     // Detokenizes
-    let synonymizedText = denormalizedTokens.map(token => token.name).join(' ');
+    let synonymizedText = correctedNames.join(' ');
 
     return synonymizedText;
   }
 
   _correctTermNames(termNames) {
-    let correctedTermNames = termNames.slice()
+    let correctedTermNames = termNames.slice();
 
     // For now just the articles (maybe add more corrections later)
-    correctedTermNames = _correctArticles(termNames);
+    correctedTermNames = this._correctArticles(correctedTermNames);
 
     return correctedTermNames;
   }
@@ -118,7 +116,7 @@ class SynonymService {
   async _denormalizeTokens(tokens) {
     return tokens.map(token => {
 
-      let name = token.name;
+      let name = token.synonymization;
 
       if (token.state.tags.includes('Plural')) {
         // Can probably do this with the NLP package as well
@@ -159,6 +157,7 @@ class SynonymService {
       console.log('originalSyllableCount', originalSyllableCount)
 
       // Get all synonym groupings that meet the syllable count
+
       // TODO
 
     } else {
@@ -326,6 +325,8 @@ class SynonymService {
         replacements[i] = 'a';
       }
     }
+
+    return replacements;
   }
 
   _applyOriginalTokenStateToTerms(unmodifiedReplacements, tokenStates) {

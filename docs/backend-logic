@@ -62,7 +62,18 @@
             - If isPlural set for the word, pluralize replacement
 
 
-Flags
+== Preserve Line Syllable Algo ==
+
+For each tokens as token
+
+For n = 0 to tokensCount
+    for m = 0 to maxReplacementsCount
+
+
+
+
+
+== Flags ==
     - preserveWordSyllableCount
         - If true, will make sure same number of syllables in each term
         - Very restrictive
