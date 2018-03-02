@@ -172,6 +172,8 @@ class SynonymService {
         //   possibleName = nlp(name).verbs(0).toPresentTense().out();
         } else if (token.state.tags.includes('FutureTense')) {
           possibleName = nlp(name).tag('Verb').verbs(0).toFutureTense().out();
+        } else if (token.state.tags.includes('Gerund')) {
+          possibleName = name + 'ing';
         }
         name = possibleName || name;
 
