@@ -34,8 +34,7 @@ class TermStorageService {
   // Private methods
 
   async _addTermIfNewWithRelations(name) {
-    console.log(name);
-    let term = await Term.findBy('name', name);
+    let term = await Term.findBy('name', name).first();
 
     if (!term) {
       await this._addNewTerm(name, true);
@@ -134,7 +133,7 @@ class TermStorageService {
           ultima: externalTerm[pos].ultima,
           relationsQueried: shouldAddRelations
         };
-        let mainTerm = await Term.findOrCreate(termParams);
+        let mainTerm = await Term.create(termParams);
 
         if (shouldAddRelations) {
 
@@ -173,7 +172,11 @@ class TermStorageService {
       let termParams = TermService.EMPTY_TERM_PARAMS;
       termParams.name = name;
       termParams.syllablesCount = syllable(name); // TODO: This should be done in the external service (or otherwise in some middle service)
-      await Term.findOrCreate(termParams);
+      try {
+        await Term.create(termParams);
+      } catch(e) {
+        Logger.error('Error creating term: ' + termParams.name);
+      }
     }
   }
 
