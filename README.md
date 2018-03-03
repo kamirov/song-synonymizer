@@ -22,7 +22,7 @@ Song Synonymizer is a Node React-Redux app that takes song or poem lyrics and re
 
 ## To-(but-probably-won't)-do
 
-- Finish "preserve line syllable" feature
+- ~Finish "preserve line syllable" feature~
 - Clean up SynonymService (it's like a bar washroom at 1am in there). There's some functions that should be extracted into separate utility services, some that should be put into one of the existing services, documentation that's needed, etc.
 - I think we're hitting the DB too often. A few optimizations to make:
     - In add-words, we should parse text and do a where-in query for any of the words in the text block. Currently we do a separate select for each word
