@@ -9,6 +9,7 @@ import FlagsListContainer from "./FlagsListContainer";
 const styles = theme => ({
     button: {
         width: '100%',
+        // marginTop: "1rem"
         // maxWidth: '201px'
     },
     sidebar: {
@@ -18,12 +19,12 @@ const styles = theme => ({
 
 const Sidebar = ({classes, onSynonymize, disabled, onlyButtonDisabled, synonymizeButtonText}) => {
     return <div>
-        <Grid container className={classes.sidebar} justify={"flex-end"}>
+        <Grid container className={classes.sidebar} justify={"flex-end"} spacing={24}>
             <Grid item xs={12}>
                 <FlagsListContainer disabled={disabled} />
             </Grid>
             <Grid item xs={12}>
-                <Button raised disabled={disabled || onlyButtonDisabled} color="accent" onClick={onSynonymize} className={classes.button}>
+                <Button variant="raised" disabled={disabled || onlyButtonDisabled} color="secondary" onClick={onSynonymize} className={classes.button}>
                     {synonymizeButtonText}</Button>
             </Grid>
         </Grid>

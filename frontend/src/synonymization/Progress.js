@@ -12,7 +12,7 @@ const styles = theme => ({
 const Progress = ({classes}) => {
     return (
         <div className={classes.progress}>
-            <CircularProgress className={classes.progress} color={"accent"} thickness={7} />
+            <CircularProgress className={classes.progress} color={"secondary"} thickness={7} />
         </div>
     );
 }

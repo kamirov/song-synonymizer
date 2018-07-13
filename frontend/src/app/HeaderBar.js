@@ -36,7 +36,7 @@ class MenuAppBar extends React.Component {
                         <Tooltip
                             title="Made with &#10084; and JS by kamirov">
                             <IconButton target="_blank" href="http://andreis.place" rel="noopener noreferrer"
-                                color="contrast"
+                                color="secondary"
                             >
                                 <Favorite />
                             </IconButton>

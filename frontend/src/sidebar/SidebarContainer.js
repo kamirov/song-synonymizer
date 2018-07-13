@@ -23,7 +23,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     onSynonymize: async () => {
-        await (new ApiService).synonymize();
+        await (new ApiService()).synonymize();
     },
     onShare: () => {}
 })
