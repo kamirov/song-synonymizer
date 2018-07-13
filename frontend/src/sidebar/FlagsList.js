@@ -12,7 +12,7 @@ const FlagsList = ({flags, flagDetails, disabled, onChange}) => {
 
     const flagControls = {};
 
-    Object.keys(flagDetails).map(ruleType => {
+    Object.keys(flagDetails).forEach(ruleType => {
         flagControls[ruleType] = Object.keys(flagDetails[ruleType]).map((key, idx) => {
             const formElement = <FormControlLabel
                 key={idx}
