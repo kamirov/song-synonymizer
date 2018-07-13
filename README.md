@@ -8,7 +8,8 @@ Song Synonymizer is a Node React-Redux app that takes song or poem lyrics and re
 - Create `.env` file in `backend/` (follow `.env.example`). Fill in
 - Get a Mashape API key for the [Words API](https://www.wordsapi.com) and set it as `X_MASHAPE_KEY` in `.env`
 - Modify the environment variables in `docker-compose.yml` if you like (note, you'll likely have to change the corresponding variables in `.env`)
-- Navigate to the app root and type `docker-compose up`
+- Navigate to frontend root and run `npm install` (eww)
+- Navigate to the app root and run `docker-compose up`
 
 
 ## Known client bugs
@@ -23,6 +24,7 @@ Song Synonymizer is a Node React-Redux app that takes song or poem lyrics and re
 ## To-(but-probably-won't)-do
 
 - ~Finish "preserve line syllable" feature~
+- Build frontend app and serve static version through Docker (currently we spool up a server for the backend, and one for the frontend, which we definitely don't need to do); also while we're at it serve a production build of the frontend
 - Clean up SynonymService (it's like a bar washroom at 1am in there). There's some functions that should be extracted into separate utility services, some that should be put into one of the existing services, documentation that's needed, etc.
 - I think we're hitting the DB too often. A few optimizations to make:
     - In add-words, we should parse text and do a where-in query for any of the words in the text block. Currently we do a separate select for each word
