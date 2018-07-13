@@ -6,7 +6,7 @@ const Message = ({open, content, apiStatus, onClick}) => {
         anchorOrigin={{ vertical: 'top', horizontal:'right' }}
         open={open}
         onClose={onClick(apiStatus)}
-        SnackbarContentProps={{
+        ContentProps={{
             'aria-describedby': 'message-id',
         }}
         message={<span id="message-id">{content}</span>}
